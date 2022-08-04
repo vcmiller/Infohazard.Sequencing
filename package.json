@@ -11,5 +11,6 @@
     "revision": "ef1bd531b680871f97a0a8aae37ace80448b6291"
   },
   "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.0.2"
   }
 }
