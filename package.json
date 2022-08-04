@@ -1,0 +1,15 @@
+{
+  "name": "com.infohazard.sequencing",
+  "displayName": "Infohazard.Sequencing",
+  "version": "1.0.0",
+  "unity": "2021.3",
+  "description": "A system for creating startup and level loading sequences, as well as saving game state.",
+  "keywords": [],
+  "repository": {
+    "url": "https://github.com/vcmiller/Infohazard.Sequencing.git",
+    "type": "git",
+    "revision": "ef1bd531b680871f97a0a8aae37ace80448b6291"
+  },
+  "dependencies": {
+  }
+}

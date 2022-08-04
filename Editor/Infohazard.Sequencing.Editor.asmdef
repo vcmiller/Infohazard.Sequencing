@@ -1,0 +1,18 @@
+{
+    "name": "Infohazard.Sequencing.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f2a237630a8b74b4f982a9011242ec6d"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
