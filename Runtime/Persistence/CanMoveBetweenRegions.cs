@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     [RequireComponent(typeof(PersistedGameObject))]
     public class CanMoveBetweenRegions : MonoBehaviour, IRegionAwareObject {
         private PersistedGameObject _pgo;

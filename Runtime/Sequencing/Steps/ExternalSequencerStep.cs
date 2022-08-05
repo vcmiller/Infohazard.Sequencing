@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class ExternalSequencerStep : MonoBehaviour, IExecutionStep {
         [SerializeField] private ExecutionStepSequencer _sequencer;
         

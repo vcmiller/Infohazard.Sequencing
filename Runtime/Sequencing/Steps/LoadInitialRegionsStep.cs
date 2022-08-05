@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class LoadInitialRegionsStep : MonoBehaviour, IExecutionStep {
         [SerializeField] private bool _enableImmediately;
         [SerializeField] private SceneGroup _sceneGroup;

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class PersistedComponentEnabled : PersistedComponent<PersistedComponentEnabled.StateInfo> {
         [SerializeField] private Behaviour _target = null;
         

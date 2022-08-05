@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class PersistedLevelRoot : LevelRoot {
         public LevelSaveData SaveData { get; private set; }
         public new static PersistedLevelRoot Current => LevelRoot.Current as PersistedLevelRoot;

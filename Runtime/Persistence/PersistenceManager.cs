@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class PersistenceManager : Singleton<PersistenceManager> {
         [SerializeField] private Serializer _serializer;
         [SerializeField] private SaveDataHandler _dataHandler;

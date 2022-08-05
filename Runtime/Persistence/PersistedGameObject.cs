@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,7 +9,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 #endif
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     [ExecuteAlways]
     public class PersistedGameObject : MonoBehaviour, IPersistedInstance {
         [SerializeField] private int _dynamicPrefabID;

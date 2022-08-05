@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class PersistedTransform : PersistedComponent<PersistedTransform.StateInfo> {
         [SerializeField] private Transform _transform;
         [SerializeField] private bool _savePosition = true;

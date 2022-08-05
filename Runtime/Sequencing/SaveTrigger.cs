@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class SaveTrigger : MonoBehaviour {
         [SerializeField] private SaveType _type;
         [SerializeField] private string _specificSaveName;

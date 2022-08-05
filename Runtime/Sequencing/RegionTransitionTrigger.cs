@@ -1,7 +1,7 @@
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     [RequireComponent(typeof(TriggerVolume))]
     public class RegionTransitionTrigger : MonoBehaviour {
         [SerializeField] private RegionRoot _transitionTo;

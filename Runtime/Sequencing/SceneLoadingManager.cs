@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class SceneLoadingManager : Singleton<SceneLoadingManager> {
         private Dictionary<SceneGroup, SceneGroupInfo> _sceneGroups = new Dictionary<SceneGroup, SceneGroupInfo>();
         private Dictionary<string, SceneState> _sceneLoadingStates = new Dictionary<string, SceneState>();

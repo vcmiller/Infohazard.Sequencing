@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class LoadStateSaveDataStep : MonoBehaviour, IExecutionStep {
         [SerializeField] private string _defaultStateIndex = "DefaultState";
 

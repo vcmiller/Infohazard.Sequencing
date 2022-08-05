@@ -1,5 +1,5 @@
 using Infohazard.Core.Editor;
-using Infohazard.Sequencing.Runtime;
+using Infohazard.Sequencing;
 using UnityEditor;
 
 using UnityEngine;

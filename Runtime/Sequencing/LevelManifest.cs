@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEngine;
 
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class LevelManifest : SingletonAsset<LevelManifest> {
         [SerializeField] [Expandable(false)]
         private LevelManifestLevelEntry[] _levels;

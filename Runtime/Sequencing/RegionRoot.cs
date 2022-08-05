@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class RegionRoot : MonoBehaviour {
         [SerializeField] private LevelManifestRegionEntry _manifestEntry;
         [SerializeField] private Transform _dynamicObjectRoot;

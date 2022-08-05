@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class UnloadStateSaveDataStep : MonoBehaviour, IExecutionStep {
         public bool IsFinished => true;
         

@@ -1,8 +1,8 @@
 ﻿using System;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class PersistedSingleton<T, TS> : Singleton<T> where T : SingletonBase where TS : PersistedData, new() {
         [SerializeField] private PersistedSingletonScope _scope = PersistedSingletonScope.Profile;
 

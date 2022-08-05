@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class WaitForScenesToLoad : MonoBehaviour, IExecutionStep {
         [SerializeField] private SceneLoadingType _types = SceneLoadingType.All;
         public bool IsFinished => !SceneLoadingManager.Instance.IsLoadingAnyScenes(_types);

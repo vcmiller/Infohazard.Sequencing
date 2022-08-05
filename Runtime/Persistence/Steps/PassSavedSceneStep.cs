@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class PassSavedSceneStep : MonoBehaviour, IExecutionStep {
         public bool IsFinished => true;
 

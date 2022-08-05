@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class JsonStringSerializer : Serializer {
         [SerializeField] private Formatting _formatting;
         

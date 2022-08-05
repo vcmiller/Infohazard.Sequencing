@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using TMPro;
 
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class LoadingScreen : Singleton<LoadingScreen> {
         [SerializeField] private ProgressBar _progressBar;
         [SerializeField] private TMP_Text _actionText;

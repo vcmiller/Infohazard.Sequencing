@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class DebugTeleportPoint : MonoBehaviour {
         [SerializeField] private string _identifier;
         [SerializeField] private LevelManifestRegionEntry _region;

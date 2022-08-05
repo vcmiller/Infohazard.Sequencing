@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class ExecutionStepSequencer : MonoBehaviour, IExecutionStep {
         [SerializeField] private bool _playOnAwake = true;
         

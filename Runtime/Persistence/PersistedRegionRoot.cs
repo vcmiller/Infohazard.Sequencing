@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class PersistedRegionRoot : RegionRoot {
         
         public RegionSaveData SaveData { get; private set; }

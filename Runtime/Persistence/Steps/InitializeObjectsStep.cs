@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class InitializeObjectsStep : MonoBehaviour, IExecutionStep {
         public bool IsFinished { get; private set; }
         

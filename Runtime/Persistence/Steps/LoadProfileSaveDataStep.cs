@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class LoadProfileSaveDataStep : MonoBehaviour, IExecutionStep {
         [SerializeField] private string _defaultProfileName = "Default";
         [SerializeField] private bool _passMostRecentState = true;

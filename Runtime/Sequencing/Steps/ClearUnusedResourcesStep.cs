@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class ClearUnusedResourcesStep : MonoBehaviour, IExecutionStep {
         public bool IsFinished => true;
         public void ExecuteForward(ExecutionStepArguments arguments) {

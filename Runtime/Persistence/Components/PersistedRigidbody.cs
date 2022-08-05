@@ -2,7 +2,7 @@
 
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class PersistedRigidbody : PersistedComponent<PersistedRigidbody.StateInfo> {
         [SerializeField] private Rigidbody _rigidbody;
         [SerializeField] private bool _saveVelocity = true;

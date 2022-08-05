@@ -8,7 +8,7 @@ using UnityEditor;
 
 #endif
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class PassEditingSceneStep : MonoBehaviour, IExecutionStep {
         public bool IsFinished => true;
 

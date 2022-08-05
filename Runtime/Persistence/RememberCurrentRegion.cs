@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class RememberCurrentRegion : MonoBehaviour, IRegionAwareObject {
         [SerializeField] private bool _onlyPersistedRegions = false;
 

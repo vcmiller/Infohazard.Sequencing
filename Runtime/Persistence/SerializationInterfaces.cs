@@ -3,7 +3,7 @@ using System.IO;
 
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public abstract class Serializer : MonoBehaviour {
         public abstract void Write(Stream stream, object data);
         public abstract bool Read<T>(Stream stream, out T data);

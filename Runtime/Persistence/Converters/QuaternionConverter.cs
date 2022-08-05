@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class QuaternionConverter : JsonConverter<Quaternion> {
         public override void WriteJson(JsonWriter writer, Quaternion value, JsonSerializer serializer) {
             writer.WriteStartObject();

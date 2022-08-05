@@ -1,4 +1,4 @@
-﻿using Infohazard.Sequencing.Runtime;
+﻿using Infohazard.Sequencing;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;

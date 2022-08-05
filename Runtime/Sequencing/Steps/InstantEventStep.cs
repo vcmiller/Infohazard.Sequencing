@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class InstantEventStep : MonoBehaviour, IExecutionStep {
         [SerializeField] private UnityEvent _onExecute;
         

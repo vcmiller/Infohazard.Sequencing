@@ -1,7 +1,7 @@
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class PauseStep : MonoBehaviour, IExecutionStep {
         [SerializeField] private bool _paused;
         

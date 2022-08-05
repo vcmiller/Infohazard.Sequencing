@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class RegionLoadTrigger : MonoBehaviour {
         [SerializeField] private LevelManifestRegionEntry[] _regionsToLoad;
         [SerializeField] private LevelManifestRegionEntry[] _regionsToUnload;

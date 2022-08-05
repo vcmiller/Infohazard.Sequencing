@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class FakePersistedLevelRoot : MonoBehaviour {
         private void Start() {
             LoadObjects();

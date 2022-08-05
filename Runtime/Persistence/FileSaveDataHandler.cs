@@ -4,7 +4,7 @@ using System.Linq;
 
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class FileSaveDataHandler : SaveDataHandler {
         [SerializeField] private string _globalDataFolder = "SaveData/";
         [SerializeField] private string _globalDataFile = "Global.json";

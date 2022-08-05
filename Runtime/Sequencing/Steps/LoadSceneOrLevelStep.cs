@@ -1,8 +1,8 @@
 using System.Collections;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class LoadSceneOrLevelStep : MonoBehaviour, IExecutionStep {
         [SerializeField] private SceneRef _defaultSceneToLoad;
         [SerializeField] private bool _makeActiveScene;

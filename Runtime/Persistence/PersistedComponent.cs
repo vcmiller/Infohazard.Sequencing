@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public interface IPersistedComponent {
         public void Initialize(PersistedGameObject persistedGameObject, PersistedData parent, string id);
         public void PostLoad();

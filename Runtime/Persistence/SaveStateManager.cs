@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class SaveStateManager : PersistedSingleton<SaveStateManager, SaveStateManager.StateInfo> {
         [SerializeField] private int _autoSaveCount = 3;
         [SerializeField] private string _autoSaveName = "Autosave_{0}";

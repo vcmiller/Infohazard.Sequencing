@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEngine;
 
 using Random = System.Random;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     [Serializable]
     public class PersistedData {
         private bool _initialized;

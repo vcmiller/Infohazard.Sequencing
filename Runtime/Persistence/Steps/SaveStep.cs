@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class SaveStep : MonoBehaviour, IExecutionStep {
         [SerializeField] private bool _saveGlobal = true;
         [SerializeField] private bool _saveProfile = true;

@@ -1,7 +1,7 @@
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace Infohazard.Sequencing.Runtime {
+namespace Infohazard.Sequencing {
     public class BinaryFormatterSerializer : Serializer {
         private BinaryFormatter _formatter = new BinaryFormatter();
         
