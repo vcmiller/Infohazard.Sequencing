@@ -75,6 +75,7 @@ namespace Infohazard.Sequencing {
             AssetDatabase.SaveAssets();
         }
         
+        [MenuItem("Infohazard/Select/Dynamic Object Manifest")]
         [MenuItem("Assets/Dynamic Object Manifest")]
         public static void SelectLevelManifest() {
             Selection.activeObject = Instance;
