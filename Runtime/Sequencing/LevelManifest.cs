@@ -52,7 +52,7 @@ namespace Infohazard.Sequencing {
         }
         
 #if UNITY_EDITOR
-        [MenuItem("Infohazard/Select/Level Manifest")]
+        [MenuItem("Tools/Infohazard/Select/Level Manifest")]
         [MenuItem("Assets/Level Manifest")]
         public static void SelectLevelManifest() {
             Selection.activeObject = Instance;
