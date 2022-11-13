@@ -25,6 +25,7 @@ using System.Linq;
 using Infohazard.Core.Editor;
 using Infohazard.Sequencing;
 using UnityEditor;
+using UnityEditor.Experimental.SceneManagement;
 using UnityEditor.SceneManagement;
 
 namespace SBR.Editor.Persistence {

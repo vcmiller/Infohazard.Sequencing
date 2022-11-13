@@ -23,6 +23,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Infohazard.Core;
+using UnityEditor.Experimental.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
