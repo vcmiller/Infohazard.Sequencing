@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Infohazard.Core;
@@ -44,6 +45,8 @@ namespace Infohazard.Sequencing {
         public ObjectSaveData SaveData { get; private set; }
         public PersistedLevelRoot Level { get; private set; }
         public PersistedRegionRoot Region { get; private set; }
+
+        public event Action LoadCompleted;
 
         public int DynamicPrefabID => _dynamicPrefabID;
 
@@ -201,6 +204,7 @@ namespace Infohazard.Sequencing {
 
             Initialized = true;
             Initializing = false;
+            LoadCompleted?.Invoke();
         }
 
         private void ConvertToDynamicInstance() {
