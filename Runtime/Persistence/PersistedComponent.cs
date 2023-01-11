@@ -24,7 +24,7 @@ using UnityEngine;
 
 namespace Infohazard.Sequencing {
     public interface IPersistedComponent {
-        public void Initialize(PersistedGameObject persistedGameObject, PersistedData parent, string id);
+        public void Initialize(PersistedGameObjectBase owner, PersistedData parent, string id);
         public void PostLoad();
         public void WriteState();
     }
@@ -32,11 +32,11 @@ namespace Infohazard.Sequencing {
     public class PersistedComponent<T> : MonoBehaviour, IPersistedComponent where T : PersistedData, new() {
         protected T State { get; private set; }
         public bool Initialized => State != null;
-        protected PersistedGameObject PersistedGameObject { get; private set; }
+        protected PersistedGameObjectBase Owner { get; private set; }
 
-        public void Initialize(PersistedGameObject persistedGameObject, PersistedData parent, string id) {
+        public void Initialize(PersistedGameObjectBase owner, PersistedData parent, string id) {
             if (PersistenceManager.Instance.GetCustomData(parent, id, out T state)) {
-                PersistedGameObject = persistedGameObject;
+                Owner = owner;
                 State = state;
                 if (state.Initialized) LoadState();
                 else LoadDefaultState();

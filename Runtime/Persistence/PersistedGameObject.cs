@@ -35,38 +35,29 @@ using UnityEditor.SceneManagement;
 
 namespace Infohazard.Sequencing {
     [ExecuteAlways]
-    public class PersistedGameObject : MonoBehaviour, IPersistedInstance {
+    public class PersistedGameObject : PersistedGameObjectBase, IPersistedInstance {
         [SerializeField] private int _dynamicPrefabID;
         [SerializeField] private ulong _instanceID;
         [SerializeField] private bool _immediatelyConvert = false;
 
         private bool _hasCheckedId;
-
-        public ObjectSaveData SaveData { get; private set; }
         public PersistedLevelRoot Level { get; private set; }
         public PersistedRegionRoot Region { get; private set; }
 
-        public event Action LoadCompleted;
-
         public int DynamicPrefabID => _dynamicPrefabID;
-
-        public bool Initialized { get; private set; }
-        
-        public bool Initializing { get; private set; }
 
         public bool IsDynamicInstance { get; private set; }
 
-        public ulong InstanceID => _instanceID;
+        public override ulong InstanceID => _instanceID;
 
-        private IPersistedComponent[] _components;
         private bool _needsToInitialize = false;
 
         private static Dictionary<ulong, PersistedGameObject> _objects = new Dictionary<ulong, PersistedGameObject>();
         public static IReadOnlyDictionary<ulong, PersistedGameObject> Objects => _objects;
 
-        private void Awake() {
+        protected override void Awake() {
             if (!Application.isPlaying) return;
-            _components = GetComponentsInChildren<IPersistedComponent>();
+            base.Awake();
             OnSpawned();
         }
 
@@ -191,22 +182,6 @@ namespace Infohazard.Sequencing {
             }
         }
 
-        private void InitializeComponents() {
-            foreach (IPersistedComponent component in _components) {
-                component.Initialize(this, SaveData, new ComponentID(transform, (Component) component).ToString());
-            }
-        }
-
-        private void PostLoad() {
-            foreach (IPersistedComponent component in _components) {
-                component.PostLoad();
-            }
-
-            Initialized = true;
-            Initializing = false;
-            LoadCompleted?.Invoke();
-        }
-
         private void ConvertToDynamicInstance() {
             if (IsDynamicInstance) {
                 Debug.LogError($"Trying to convert object {name} with ID {_instanceID} to dynamic, but it already is.");
@@ -261,12 +236,6 @@ namespace Infohazard.Sequencing {
 
         private void RegionRoot_Unloading() {
             WriteState();
-        }
-
-        public void WriteState() {
-            foreach (IPersistedComponent component in _components) {
-                component.WriteState();
-            }
         }
 
         public static bool TryGetObjectWithID(ulong id, out PersistedGameObject obj) {
