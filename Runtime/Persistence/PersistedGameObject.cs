@@ -26,7 +26,9 @@ using System.Linq;
 using Infohazard.Core;
 using UnityEditor.Experimental.SceneManagement;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -36,7 +38,7 @@ using UnityEditor.SceneManagement;
 namespace Infohazard.Sequencing {
     [ExecuteAlways]
     public class PersistedGameObject : PersistedGameObjectBase, IPersistedInstance {
-        [SerializeField] private int _dynamicPrefabID;
+        [SerializeField, SelfAssetReference] private AssetReferenceGameObject _prefabReference;
         [SerializeField] private ulong _instanceID;
         [SerializeField] private bool _immediatelyConvert = false;
 
@@ -44,7 +46,7 @@ namespace Infohazard.Sequencing {
         public PersistedLevelRoot Level { get; private set; }
         public PersistedRegionRoot Region { get; private set; }
 
-        public int DynamicPrefabID => _dynamicPrefabID;
+        public AssetReferenceGameObject PrefabReference => _prefabReference;
 
         public bool IsDynamicInstance { get; private set; }
 
@@ -147,6 +149,11 @@ namespace Infohazard.Sequencing {
             IsDynamicInstance = true;
         }
 
+        public void SetInstanceIDEditMode(ulong instanceID) {
+            if (DebugUtility.CheckPlaying()) return;
+            _instanceID = instanceID;
+        }
+
         private void Initialize() {
             if (!_needsToInitialize) return;
             _needsToInitialize = false;
@@ -157,6 +164,8 @@ namespace Infohazard.Sequencing {
 
             Scene scene = gameObject.scene;
             SceneLoadingManager.Instance.GetSceneLoadedState(scene.name, out _, out RegionRoot region);
+            
+            Debug.Log($"{name} initialized in scene {scene.name}");
 
             if (region is PersistedRegionRoot pRegion) Region = pRegion;
             if (Region) Region.Unloading += RegionRoot_Unloading;
@@ -164,9 +173,9 @@ namespace Infohazard.Sequencing {
             PersistedObjectCollection container = Container;
             SaveData = container != null
                 ? _instanceID == 0
-                    ? container.RegisterNewDynamicObject(_dynamicPrefabID)
+                    ? container.RegisterNewDynamicObject(_prefabReference.AssetGUID)
                     : container.RegisterExistingObject(_instanceID, IsDynamicInstance)
-                : new ObjectSaveData(_instanceID, false, -1);
+                : new ObjectSaveData(_instanceID, false, null);
             _instanceID = SaveData.InstanceID;
             if (_objects.ContainsKey(_instanceID)) {
                 Debug.LogError($"Object with instanceID already exists, trying to replace with {name}.", this);
@@ -190,7 +199,7 @@ namespace Infohazard.Sequencing {
 
             PersistedObjectCollection container = Container;
             if (container == null) return;
-            SaveData = container.ConvertStaticObjectToDynamic(_instanceID, _dynamicPrefabID);
+            SaveData = container.ConvertStaticObjectToDynamic(_instanceID, _prefabReference.AssetGUID);
 
             _objects.Remove(_instanceID);
             _instanceID = SaveData.InstanceID;
@@ -202,7 +211,7 @@ namespace Infohazard.Sequencing {
         }
 
         public void TransitionToRegion(PersistedRegionRoot newRoot) {
-            if (DynamicPrefabID == 0) {
+            if (_prefabReference?.RuntimeKeyIsValid() != true) {
                 Debug.LogError($"Trying to transition object {name}, which doesn't have a dynamic prefab ID.");
                 return;
             }
@@ -215,7 +224,7 @@ namespace Infohazard.Sequencing {
             // Update container after changing region.
             container = Container;
 
-            var data = container.RegisterNewDynamicObject(DynamicPrefabID, _instanceID);
+            var data = container.RegisterNewDynamicObject(_prefabReference.AssetGUID, _instanceID);
             data.CustomData = SaveData.CustomData;
             data.Destroyed = false;
             data.Initialized = true;
@@ -253,19 +262,18 @@ namespace Infohazard.Sequencing {
         public static void LoadDynamicObjects(PersistedObjectCollection data, Scene scene, Transform parent) {
             foreach (var objectData in data.Objects.ToList()) {
                 if (!objectData.IsDynamicInstance) continue;
-                string path = DynamicObjectManifest.Instance.GetEntry(objectData.DynamicPrefabID)?.ResourcePath;
-                if (string.IsNullOrEmpty(path)) {
-                    Debug.LogError($"Could not find prefab path for prefab with ID {objectData.DynamicPrefabID}.");
+
+                GameObject obj = Addressables.InstantiateAsync(objectData.DynamicPrefabID, parent).WaitForCompletion();
+                if (obj == null || !obj.TryGetComponent(out PersistedGameObject pgo)) {
+                    Debug.LogError(
+                        $"Could not find PersistedGameObject prefab with GUID {objectData.DynamicPrefabID}.");
                     continue;
                 }
 
-                PersistedGameObject prefab = Resources.Load<PersistedGameObject>(path);
-                if (prefab == null) {
-                    Debug.LogError($"Could not load prefab at path {path}.");
-                    continue;
+                if (!parent) {
+                    SceneManager.MoveGameObjectToScene(obj, scene);
                 }
-
-                Spawnable.Spawn(prefab, parent: parent, persistedInstanceID: objectData.InstanceID, scene: scene);
+                pgo.SetupDynamicInstance(objectData.InstanceID);
             }
         }
 

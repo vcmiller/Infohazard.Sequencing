@@ -270,7 +270,7 @@ namespace Infohazard.Sequencing {
 
         public ObjectSaveData RegisterExistingObject(ulong instanceID, bool isDynamic) {
             if (!_objects.TryGetValue(instanceID, out ObjectSaveData data)) {
-                data = new ObjectSaveData(instanceID, isDynamic, -1);
+                data = new ObjectSaveData(instanceID, isDynamic, null);
                 _objects[instanceID] = data;
                 Subscribe(data);
                 NotifyStateChanged();
@@ -279,7 +279,7 @@ namespace Infohazard.Sequencing {
             return data;
         }
 
-        public ObjectSaveData RegisterNewDynamicObject(int prefabID, ulong? instanceID = null) {
+        public ObjectSaveData RegisterNewDynamicObject(string prefabID, ulong? instanceID = null) {
             if (!instanceID.HasValue || _objects.ContainsKey(instanceID.Value)) {
                 instanceID = GetUnusedInstanceID();
             }
@@ -291,7 +291,7 @@ namespace Infohazard.Sequencing {
             return data;
         }
 
-        public ObjectSaveData ConvertStaticObjectToDynamic(ulong instanceID, int prefabID) {
+        public ObjectSaveData ConvertStaticObjectToDynamic(ulong instanceID, string prefabID) {
             ObjectSaveData staticData = RegisterExistingObject(instanceID, false);
             staticData.Destroyed = true;
             ulong newInstanceID = GetUnusedInstanceID();
@@ -352,18 +352,18 @@ namespace Infohazard.Sequencing {
     public class ObjectSaveData : PersistedData {
         private ulong _instanceID;
         private bool _isDynamicInstance;
-        private int _dynamicPrefabID;
+        private string _dynamicPrefabID;
         private bool _destroyed;
 
         public ulong InstanceID => _instanceID;
 
         public bool IsDynamicInstance => _isDynamicInstance;
 
-        public int DynamicPrefabID => _dynamicPrefabID;
+        public string DynamicPrefabID => _dynamicPrefabID;
         
         public ObjectSaveData() {}
 
-        public ObjectSaveData(ulong instanceID, bool isDynamicInstance, int dynamicPrefabID) {
+        public ObjectSaveData(ulong instanceID, bool isDynamicInstance, string dynamicPrefabID) {
             _instanceID = instanceID;
             _isDynamicInstance = isDynamicInstance;
             _dynamicPrefabID = dynamicPrefabID;
