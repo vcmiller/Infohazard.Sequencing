@@ -35,7 +35,7 @@ namespace Infohazard.Sequencing {
         
         public bool IsFinished { get; private set; }
         
-        public void ExecuteForward(ExecutionStepArguments arguments) {
+        public void Execute(ExecutionStepArguments arguments) {
             StartCoroutine(CRT_Execution(arguments));
         }
 

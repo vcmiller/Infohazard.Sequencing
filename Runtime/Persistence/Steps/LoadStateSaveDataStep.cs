@@ -30,7 +30,7 @@ namespace Infohazard.Sequencing {
         
         public bool IsFinished => true;
         
-        public void ExecuteForward(ExecutionStepArguments arguments) {
+        public void Execute(ExecutionStepArguments arguments) {
             string stateToLoad = ParamStateName.GetOrDefault(arguments, _defaultStateIndex);
             PersistenceManager.Instance.LoadStateData(stateToLoad);
         }

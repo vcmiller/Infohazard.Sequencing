@@ -27,6 +27,6 @@ namespace Infohazard.Sequencing {
         [SerializeField] private ExecutionStepSequencer _sequencer;
         
         public bool IsFinished => _sequencer.IsFinished;
-        public void ExecuteForward(ExecutionStepArguments arguments) => _sequencer.ExecuteForward(arguments);
+        public void Execute(ExecutionStepArguments arguments) => _sequencer.Execute(arguments);
     }
 }

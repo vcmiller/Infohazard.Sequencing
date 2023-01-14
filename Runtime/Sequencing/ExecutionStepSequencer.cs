@@ -22,6 +22,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Infohazard.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -63,11 +64,11 @@ namespace Infohazard.Sequencing {
                     SceneControl.Quit();
                 }
 
-                ExecuteForward(new ExecutionStepArguments());
+                Execute(new ExecutionStepArguments());
             }
         }
 
-        public void ExecuteForward(ExecutionStepArguments arguments) {
+        public void Execute(ExecutionStepArguments arguments) {
             StartCoroutine(ExecuteForwardCoroutine(arguments));
         }
 
@@ -77,7 +78,7 @@ namespace Infohazard.Sequencing {
             for (int index = 0; index < _steps.Count; index++) {
                 _currentStep = index;
                 IExecutionStep step = _steps[index];
-                step.ExecuteForward(arguments);
+                step.Execute(arguments);
                 while (!step.IsFinished) {
                     yield return null;
                 }
@@ -90,7 +91,42 @@ namespace Infohazard.Sequencing {
     public interface IExecutionStep {
         bool IsFinished { get; }
         
-        void ExecuteForward(ExecutionStepArguments arguments);
+        void Execute(ExecutionStepArguments arguments);
+    }
+
+    public abstract class ExecutionStepCoroutine : MonoBehaviour, IExecutionStep {
+        public virtual bool IsFinished { get; protected set; }
+
+        protected Coroutine Coroutine;
+
+        public virtual void Execute(ExecutionStepArguments args) {
+            IsFinished = false;
+            Coroutine = StartCoroutine(ExecuteCoroutineInternal(args));
+        }
+
+        private IEnumerator ExecuteCoroutineInternal(ExecutionStepArguments args) {
+            yield return ExecuteCoroutine(args);
+            IsFinished = true;
+            Coroutine = null;
+        }
+
+        protected abstract IEnumerator ExecuteCoroutine(ExecutionStepArguments args);
+    }
+
+    public abstract class ExecutionStepUniTask : MonoBehaviour, IExecutionStep {
+        public virtual bool IsFinished { get; protected set; }
+
+        public virtual void Execute(ExecutionStepArguments args) {
+            IsFinished = false;
+            ExecuteInternalAsync(args).Forget();
+        }
+
+        private async UniTask ExecuteInternalAsync(ExecutionStepArguments args) {
+            await ExecuteAsync(args);
+            IsFinished = true;
+        }
+
+        protected abstract UniTask ExecuteAsync(ExecutionStepArguments args);
     }
 
     public class ExecutionStepArguments {

@@ -30,7 +30,7 @@ namespace Infohazard.Sequencing {
 
         [SerializeField] private SceneRef _defaultScene;
         
-        public void ExecuteForward(ExecutionStepArguments arguments) {
+        public void Execute(ExecutionStepArguments arguments) {
             var state = PersistenceManager.Instance.LoadedStateData;
             string sceneToLoad = _defaultScene.Name;
             if (state != null && !string.IsNullOrEmpty(state.CurrentScene)) {

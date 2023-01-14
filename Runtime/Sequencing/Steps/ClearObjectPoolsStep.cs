@@ -26,7 +26,7 @@ using UnityEngine;
 namespace Infohazard.Sequencing {
     public class ClearObjectPoolsStep : MonoBehaviour, IExecutionStep {
         public bool IsFinished => true;
-        public void ExecuteForward(ExecutionStepArguments arguments) {
+        public void Execute(ExecutionStepArguments arguments) {
             PoolManager.Instance.ClearInactiveObjects();
         }
     }

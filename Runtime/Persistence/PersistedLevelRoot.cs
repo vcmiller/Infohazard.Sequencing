@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 
 namespace Infohazard.Sequencing {
     public class PersistedLevelRoot : LevelRoot {
@@ -36,22 +37,23 @@ namespace Infohazard.Sequencing {
 
         public event Action WillSave;
 
-        public override void Initialize() {
-            base.Initialize();
+        public override UniTask Initialize() {
+            UniTask task = base.Initialize();
             SaveData = PersistenceManager.Instance.GetLevelData(ManifestEntry.LevelID);
             SaveData.StateChanged += SaveData_StateChanged;
+            return task;
         }
 
-        public virtual void LoadObjects() {
+        public virtual async UniTask LoadObjects() {
             List<PersistedRegionRoot> persistedRegions = LoadedRegions.Values.OfType<PersistedRegionRoot>().ToList();
 
             List<PersistedGameObject> gameObjects = new List<PersistedGameObject>();
             
-            PersistedGameObject.LoadDynamicObjects(SaveData.Objects, gameObject.scene, DynamicObjectRoot);
+            await PersistedGameObject.LoadDynamicObjects(SaveData.Objects, gameObject.scene, DynamicObjectRoot);
             PersistedGameObject.CollectGameObjects(gameObject.scene, gameObjects);
             
             foreach (PersistedRegionRoot regionRoot in persistedRegions) {
-                regionRoot.LoadDynamicObjects();
+                await regionRoot.LoadDynamicObjects();
                 PersistedGameObject.CollectGameObjects(regionRoot.gameObject.scene, gameObjects);
             }
             

@@ -29,7 +29,7 @@ namespace Infohazard.Sequencing {
         [SerializeField] private bool _saveState = true;
         
         public bool IsFinished => true;
-        public void ExecuteForward(ExecutionStepArguments arguments) {
+        public void Execute(ExecutionStepArguments arguments) {
             if (_saveState) PersistenceManager.Instance.SaveStateData();
             if (_saveProfile) PersistenceManager.Instance.SaveProfileData();
             if (_saveGlobal) PersistenceManager.Instance.SaveGlobalData();

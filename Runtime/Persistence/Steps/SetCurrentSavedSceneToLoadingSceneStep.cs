@@ -28,7 +28,7 @@ namespace Infohazard.Sequencing {
         [SerializeField] private SceneRef _defaultScene;
         
         public bool IsFinished => true;
-        public void ExecuteForward(ExecutionStepArguments arguments) {
+        public void Execute(ExecutionStepArguments arguments) {
             var state = PersistenceManager.Instance.LoadedStateData;
             if (state == null) {
                 Debug.LogError("Trying to save current scene when no state data is loaded.");

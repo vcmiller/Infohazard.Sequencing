@@ -39,7 +39,7 @@ namespace Infohazard.Sequencing {
         public override void GoToMainMenu() {
             ExecutionStepArguments args = new ExecutionStepArguments();
             LoadSceneOrLevelStep.ParamSceneToLoad.Set(args, MainMenuScene.Name);
-            _goToMainMenuSequencer.ExecuteForward(args);
+            _goToMainMenuSequencer.Execute(args);
         }
 
         public virtual void LoadState(string state) {
@@ -50,7 +50,7 @@ namespace Infohazard.Sequencing {
             
             ExecutionStepArguments args = new ExecutionStepArguments();
             LoadStateSaveDataStep.ParamStateName.Set(args, state);
-            _loadStateSequencer.ExecuteForward(args);
+            _loadStateSequencer.Execute(args);
         }
 
         public virtual void LoadProfile(string profile) {
@@ -61,7 +61,7 @@ namespace Infohazard.Sequencing {
             
             ExecutionStepArguments args = new ExecutionStepArguments();
             LoadProfileSaveDataStep.ParamProfileName.Set(args, profile);
-            _loadProfileSequencer.ExecuteForward(args);
+            _loadProfileSequencer.Execute(args);
         }
 
         public virtual void LoadMostRecentProfile() {

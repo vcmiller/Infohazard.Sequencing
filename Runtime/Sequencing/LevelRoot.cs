@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
@@ -51,16 +52,17 @@ namespace Infohazard.Sequencing {
             _loadedRegions.Remove(region.RegionIndex);
         }
 
-        public virtual void Initialize() {
+        public virtual UniTask Initialize() {
             Unloading?.Invoke();
             
             if (Current) {
                 Debug.LogError("Trying to initialize a LevelRoot when one is already active!");
-                return;
+            } else {
+                Current = this;
+                Initialized = true;
             }
 
-            Current = this;
-            Initialized = true;
+            return UniTask.CompletedTask;
         }
 
         public virtual void Cleanup() {

@@ -30,7 +30,7 @@ namespace Infohazard.Sequencing {
         
         public bool IsFinished => !_waitToFinish || !SceneLoadingManager.Instance.IsLoadingAnyScenes(_typesToActivate);
         
-        public void ExecuteForward(ExecutionStepArguments arguments) {
+        public void Execute(ExecutionStepArguments arguments) {
             SceneLoadingManager.Instance.ActivateLoadingScenes(_groupToActivate, _typesToActivate);
         }
     }

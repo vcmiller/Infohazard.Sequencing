@@ -34,13 +34,13 @@ namespace Infohazard.Sequencing {
         public virtual void GoToScene(string scene) {
             ExecutionStepArguments args = new ExecutionStepArguments();
             LoadSceneOrLevelStep.ParamSceneToLoad.Set(args, scene);
-            _goToSceneSequencer.ExecuteForward(args);
+            _goToSceneSequencer.Execute(args);
         }
 
         public virtual void GoToMainMenu() {
             ExecutionStepArguments args = new ExecutionStepArguments();
             LoadSceneOrLevelStep.ParamSceneToLoad.Set(args, _mainMenuScene.Name);
-            _goToSceneSequencer.ExecuteForward(args);
+            _goToSceneSequencer.Execute(args);
         }
     }
 }

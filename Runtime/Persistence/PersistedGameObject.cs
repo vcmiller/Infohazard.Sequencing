@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Infohazard.Core;
 using UnityEditor.Experimental.SceneManagement;
 using UnityEngine;
@@ -259,22 +260,31 @@ namespace Infohazard.Sequencing {
             return ids?.Select(GetObjectWithID).Where(obj => obj) ?? Enumerable.Empty<PersistedGameObject>();
         }
 
-        public static void LoadDynamicObjects(PersistedObjectCollection data, Scene scene, Transform parent) {
-            foreach (var objectData in data.Objects.ToList()) {
-                if (!objectData.IsDynamicInstance) continue;
-
-                GameObject obj = Addressables.InstantiateAsync(objectData.DynamicPrefabID, parent).WaitForCompletion();
-                if (obj == null || !obj.TryGetComponent(out PersistedGameObject pgo)) {
-                    Debug.LogError(
-                        $"Could not find PersistedGameObject prefab with GUID {objectData.DynamicPrefabID}.");
-                    continue;
+        public static UniTask LoadDynamicObjects(PersistedObjectCollection data, Scene scene, Transform parent) {
+            return UniTask.WhenAll(data.Objects.SelectWhere((ObjectSaveData objectData, out UniTask task) => {
+                if (!objectData.IsDynamicInstance) {
+                    task = UniTask.CompletedTask;
+                    return false;
                 }
 
-                if (!parent) {
-                    SceneManager.MoveGameObjectToScene(obj, scene);
-                }
-                pgo.SetupDynamicInstance(objectData.InstanceID);
+                task = LoadDynamicObjectAsync(objectData, scene, parent);
+                return true;
+            }));
+        }
+
+        private static async UniTask LoadDynamicObjectAsync(ObjectSaveData objectData, Scene scene, Transform parent) {
+            GameObject obj = await Addressables.InstantiateAsync(objectData.DynamicPrefabID, parent);
+            
+            if (obj == null || !obj.TryGetComponent(out PersistedGameObject pgo)) {
+                Debug.LogError(
+                    $"Could not find PersistedGameObject prefab with GUID {objectData.DynamicPrefabID}.");
+                return;
             }
+
+            if (!parent) {
+                SceneManager.MoveGameObjectToScene(obj, scene);
+            }
+            pgo.SetupDynamicInstance(objectData.InstanceID);
         }
 
         public static void InitializeGameObjects(List<PersistedGameObject> list) {

@@ -25,7 +25,7 @@ using UnityEngine;
 namespace Infohazard.Sequencing {
     public class ClearUnusedResourcesStep : MonoBehaviour, IExecutionStep {
         public bool IsFinished => true;
-        public void ExecuteForward(ExecutionStepArguments arguments) {
+        public void Execute(ExecutionStepArguments arguments) {
             Resources.UnloadUnusedAssets();
         }
     }

@@ -28,7 +28,7 @@ namespace Infohazard.Sequencing {
         [SerializeField] private bool _paused;
         
         public bool IsFinished => true;
-        public void ExecuteForward(ExecutionStepArguments arguments) {
+        public void Execute(ExecutionStepArguments arguments) {
             Pause.Paused = _paused;
         }
     }

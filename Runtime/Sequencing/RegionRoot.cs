@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
@@ -38,18 +39,20 @@ namespace Infohazard.Sequencing {
 
         public event Action Unloading;
         
-        public virtual void Initialize() {
+        public virtual UniTask Initialize() {
             LevelRoot.Current.RegisterRegion(this);
             Initialized = true;
+            return UniTask.CompletedTask;
         }
 
-        public virtual void Cleanup() {
+        public virtual UniTask Cleanup() {
             Unloading?.Invoke();
             Initialized = false;
             // It's ok if the level is unloaded before its regions (as long as it's in the same frame)
             if (LevelRoot.Current) {
                 LevelRoot.Current.DeregisterRegion(this);
             }
+            return UniTask.CompletedTask;
         }
     }
 }

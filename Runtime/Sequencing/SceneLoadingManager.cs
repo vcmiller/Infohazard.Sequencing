@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Infohazard.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -253,8 +254,8 @@ namespace Infohazard.Sequencing {
                         SceneManager.SetActiveScene(scene);
                     }
 
-                    if (sceneInfo.Level) sceneInfo.Level.Initialize();
-                    if (sceneInfo.Region) sceneInfo.Region.Initialize();
+                    if (sceneInfo.Level) sceneInfo.Level.Initialize().Forget();
+                    if (sceneInfo.Region) sceneInfo.Region.Initialize().Forget();
                 }
 
                 foreach (SceneUnloadingOperation operation in groupInfo.UnloadingScenes) {

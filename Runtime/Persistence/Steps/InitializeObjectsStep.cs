@@ -20,28 +20,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Collections;
-using UnityEngine;
+using Cysharp.Threading.Tasks;
 
 namespace Infohazard.Sequencing {
-    public class InitializeObjectsStep : MonoBehaviour, IExecutionStep {
-        public bool IsFinished { get; private set; }
-        
-        public void ExecuteForward(ExecutionStepArguments arguments) {
+    public class InitializeObjectsStep : ExecutionStepUniTask {
+        protected override async UniTask ExecuteAsync(ExecutionStepArguments args) {
             var level = PersistedLevelRoot.Current;
             if (!level) {
-                IsFinished = true;
                 return;
             }
 
-            IsFinished = false;
-            StartCoroutine(CRT_Execution(level));
-        }
-
-        private IEnumerator CRT_Execution(PersistedLevelRoot level) {
-            yield return null;
-            level.LoadObjects();
-            IsFinished = true;
+            await UniTask.DelayFrame(1);
+            await level.LoadObjects();
         }
     }
 }

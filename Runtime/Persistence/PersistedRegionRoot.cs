@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
@@ -29,20 +30,20 @@ namespace Infohazard.Sequencing {
         
         public bool ObjectsLoaded { get; private set; }
 
-        public override void Initialize() {
+        public override UniTask Initialize() {
             var level = PersistedLevelRoot.Current;
             if (!level) {
                 Debug.LogError("Trying to initialize PersistedRegionRoot with no PersistedLevelRoot.");
-                return;
+                return UniTask.CompletedTask;
             }
 
             SaveData = level.GetOrLoadRegionData(ManifestEntry);
             
-            base.Initialize();
+            return base.Initialize();
         }
 
-        public virtual void LoadDynamicObjects() {
-            PersistedGameObject.LoadDynamicObjects(SaveData.Objects, gameObject.scene, DynamicObjectRoot);
+        public virtual async UniTask LoadDynamicObjects() {
+            await PersistedGameObject.LoadDynamicObjects(SaveData.Objects, gameObject.scene, DynamicObjectRoot);
             ObjectsLoaded = true;
         }
     }

@@ -28,7 +28,7 @@ namespace Infohazard.Sequencing {
         [SerializeField] private SceneRef _sceneToLoad;
         public bool IsFinished => true;
         
-        public void ExecuteForward(ExecutionStepArguments arguments) {
+        public void Execute(ExecutionStepArguments arguments) {
             LoadSceneOrLevelStep.ParamSceneToLoad.Set(arguments, _sceneToLoad.Name);
         }
     }

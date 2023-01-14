@@ -26,7 +26,7 @@ namespace Infohazard.Sequencing {
     public class UnloadProfileSaveDataStep : MonoBehaviour, IExecutionStep {
         public bool IsFinished => true;
         
-        public void ExecuteForward(ExecutionStepArguments arguments) {
+        public void Execute(ExecutionStepArguments arguments) {
             PersistenceManager.Instance.UnloadProfileData();
         }
     }

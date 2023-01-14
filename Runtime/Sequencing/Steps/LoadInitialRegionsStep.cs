@@ -46,7 +46,7 @@ namespace Infohazard.Sequencing {
             }
         }
         
-        public void ExecuteForward(ExecutionStepArguments arguments) {
+        public void Execute(ExecutionStepArguments arguments) {
             if (ParamLoadingLevel.Get(arguments, out LevelManifestLevelEntry level) && level != null) {
                 StartCoroutine(CRT_Execution(level, arguments));
             } else {

@@ -36,7 +36,7 @@ namespace Infohazard.Sequencing {
 
         private ExecutionStepSequencer _executingSequencer;
         
-        public void ExecuteForward(ExecutionStepArguments arguments) {
+        public void Execute(ExecutionStepArguments arguments) {
 #if UNITY_EDITOR
             var sceneParam = LoadSceneOrLevelStep.ParamSceneToLoad;
             var regionsParam = LoadInitialRegionsStep.ParamRegionsToLoad;
