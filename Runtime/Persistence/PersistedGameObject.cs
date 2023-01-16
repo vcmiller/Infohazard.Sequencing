@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using Infohazard.Core;
+using Infohazard.Core.Addressables;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.SceneManagement;
@@ -120,6 +121,7 @@ namespace Infohazard.Sequencing {
                 if ((_instanceID == 0 || !_hasCheckedId) && !IsPrefab()) {
                     UpdateUniqueID();
                 }
+
                 return;
             }
 #endif
@@ -134,7 +136,7 @@ namespace Infohazard.Sequencing {
             if (level == null || !level.ObjectsLoaded) return;
 
             SceneLoadingManager.Instance.GetSceneLoadedState(gameObject.scene.name, out _, out RegionRoot region);
-            if (region is PersistedRegionRoot {ObjectsLoaded: false}) return;
+            if (region is PersistedRegionRoot { ObjectsLoaded: false }) return;
 
             Initialize();
             InitializeComponents();
@@ -165,7 +167,7 @@ namespace Infohazard.Sequencing {
 
             Scene scene = gameObject.scene;
             SceneLoadingManager.Instance.GetSceneLoadedState(scene.name, out _, out RegionRoot region);
-            
+
             Debug.Log($"{name} initialized in scene {scene.name}");
 
             if (region is PersistedRegionRoot pRegion) Region = pRegion;
@@ -181,6 +183,7 @@ namespace Infohazard.Sequencing {
             if (_objects.ContainsKey(_instanceID)) {
                 Debug.LogError($"Object with instanceID already exists, trying to replace with {name}.", this);
             }
+
             _objects[_instanceID] = this;
 
             if (SaveData.Destroyed) {
@@ -216,12 +219,13 @@ namespace Infohazard.Sequencing {
                 Debug.LogError($"Trying to transition object {name}, which doesn't have a dynamic prefab ID.");
                 return;
             }
+
             WriteState();
             PersistedObjectCollection container = Container;
             if (container == null) return;
             container.RegisterObjectDestroyed(_instanceID);
             Region = newRoot;
-            
+
             // Update container after changing region.
             container = Container;
 
@@ -237,6 +241,7 @@ namespace Infohazard.Sequencing {
                 _instanceID = SaveData.InstanceID;
                 _objects.Add(_instanceID, this);
             }
+
             InitializeComponents();
         }
 
@@ -273,18 +278,11 @@ namespace Infohazard.Sequencing {
         }
 
         private static async UniTask LoadDynamicObjectAsync(ObjectSaveData objectData, Scene scene, Transform parent) {
-            GameObject obj = await Addressables.InstantiateAsync(objectData.DynamicPrefabID, parent);
-            
-            if (obj == null || !obj.TryGetComponent(out PersistedGameObject pgo)) {
-                Debug.LogError(
-                    $"Could not find PersistedGameObject prefab with GUID {objectData.DynamicPrefabID}.");
-                return;
-            }
-
-            if (!parent) {
-                SceneManager.MoveGameObjectToScene(obj, scene);
-            }
-            pgo.SetupDynamicInstance(objectData.InstanceID);
+            await AddressableUtil.SpawnAddressableAsync<PersistedGameObject>(objectData.DynamicPrefabID, new SpawnParams {
+                Parent = parent,
+                Scene = scene,
+                PersistedInstanceID = objectData.InstanceID,
+            });
         }
 
         public static void InitializeGameObjects(List<PersistedGameObject> list) {
@@ -303,6 +301,7 @@ namespace Infohazard.Sequencing {
 
         private static Stack<Transform> _transforms = new Stack<Transform>();
         private static List<GameObject> _rootGameObjects = new List<GameObject>();
+
         public static void CollectGameObjects(Scene scene, List<PersistedGameObject> list) {
             _transforms.Clear();
             _rootGameObjects.Clear();
