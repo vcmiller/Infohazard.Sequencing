@@ -20,12 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
     public interface IPersistedComponent {
         public void Initialize(PersistedGameObjectBase owner, PersistedData parent, string id);
-        public void PostLoad();
+        public UniTask PostLoad();
         public void WriteState();
     }
     
@@ -54,7 +55,7 @@ namespace Infohazard.Sequencing {
         
         public virtual void LoadState() {}
         public virtual void LoadDefaultState() {}
-        public virtual void PostLoad() {}
+        public virtual UniTask PostLoad() => UniTask.CompletedTask;
         public virtual void WriteState() {}
     }
 }

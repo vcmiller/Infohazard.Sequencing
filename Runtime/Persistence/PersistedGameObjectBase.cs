@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Infohazard.Core;
 using UnityEngine;
 
@@ -47,10 +48,8 @@ namespace Infohazard.Sequencing {
             }
         }
 
-        protected void PostLoad() {
-            foreach (IPersistedComponent component in Components) {
-                component.PostLoad();
-            }
+        protected async UniTask PostLoad() {
+            await UniTask.WhenAll(Components.Select(component => component.PostLoad()));
 
             Initialized = true;
             Initializing = false;

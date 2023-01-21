@@ -29,6 +29,7 @@ namespace Infohazard.Sequencing {
     public class PersistedLevelRoot : LevelRoot {
         public LevelSaveData SaveData { get; private set; }
         public new static PersistedLevelRoot Current => LevelRoot.Current as PersistedLevelRoot;
+        public bool ObjectsLoading { get; private set; }
         public bool ObjectsLoaded { get; private set; }
         
         private bool _dirty;
@@ -45,6 +46,8 @@ namespace Infohazard.Sequencing {
         }
 
         public virtual async UniTask LoadObjects() {
+            ObjectsLoading = true;
+            
             List<PersistedRegionRoot> persistedRegions = LoadedRegions.Values.OfType<PersistedRegionRoot>().ToList();
 
             List<PersistedGameObject> gameObjects = new List<PersistedGameObject>();
@@ -57,8 +60,9 @@ namespace Infohazard.Sequencing {
                 PersistedGameObject.CollectGameObjects(regionRoot.gameObject.scene, gameObjects);
             }
             
-            PersistedGameObject.InitializeGameObjects(gameObjects);
+            await PersistedGameObject.InitializeGameObjects(gameObjects);
 
+            ObjectsLoading = false;
             ObjectsLoaded = true;
         }
 
@@ -67,15 +71,19 @@ namespace Infohazard.Sequencing {
             base.Cleanup();
         }
 
-        internal override void RegisterRegion(RegionRoot region) {
-            base.RegisterRegion(region);
+        internal override async UniTask RegisterRegion(RegionRoot region) {
+            if (ObjectsLoading) {
+                await UniTask.WaitUntil(() => !ObjectsLoading);
+            }
+            
+            await base.RegisterRegion(region);
             GetOrLoadRegionData(region.ManifestEntry).Loaded = true;
 
             if (ObjectsLoaded && region is PersistedRegionRoot root) {
-                root.LoadDynamicObjects();
+                await root.LoadDynamicObjects();
                 List<PersistedGameObject> gameObjects = new List<PersistedGameObject>();
                 PersistedGameObject.CollectGameObjects(root.gameObject.scene, gameObjects);
-                PersistedGameObject.InitializeGameObjects(gameObjects);
+                await PersistedGameObject.InitializeGameObjects(gameObjects);
             }
         }
 

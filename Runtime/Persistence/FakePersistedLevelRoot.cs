@@ -21,19 +21,20 @@
 // SOFTWARE.
 
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
     public class FakePersistedLevelRoot : MonoBehaviour {
         private void Start() {
-            LoadObjects();
+            LoadObjects().Forget();
         }
 
-        public virtual void LoadObjects() {
+        public virtual UniTask LoadObjects() {
             List<PersistedGameObject> gameObjects = new List<PersistedGameObject>();
 
             PersistedGameObject.CollectGameObjects(gameObject.scene, gameObjects);
-            PersistedGameObject.InitializeGameObjects(gameObjects);
+            return PersistedGameObject.InitializeGameObjects(gameObjects);
         }
     }
 }

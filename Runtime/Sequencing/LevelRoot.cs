@@ -44,8 +44,9 @@ namespace Infohazard.Sequencing {
 
         public Action Unloading;
 
-        internal virtual void RegisterRegion(RegionRoot region) {
+        internal virtual UniTask RegisterRegion(RegionRoot region) {
             _loadedRegions.Add(region.RegionIndex, region);
+            return UniTask.CompletedTask;
         }
 
         internal virtual void DeregisterRegion(RegionRoot region) {

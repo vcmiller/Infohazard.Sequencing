@@ -39,10 +39,9 @@ namespace Infohazard.Sequencing {
 
         public event Action Unloading;
         
-        public virtual UniTask Initialize() {
-            LevelRoot.Current.RegisterRegion(this);
+        public virtual async UniTask Initialize() {
+            await LevelRoot.Current.RegisterRegion(this);
             Initialized = true;
-            return UniTask.CompletedTask;
         }
 
         public virtual UniTask Cleanup() {

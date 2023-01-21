@@ -127,20 +127,20 @@ namespace Infohazard.Sequencing {
 #endif
 
             if (_needsToInitialize) {
-                CheckDynamicRegister();
+                CheckDynamicRegister().Forget();
             }
         }
 
-        private void CheckDynamicRegister() {
+        private UniTask CheckDynamicRegister() {
             var level = PersistedLevelRoot.Current;
-            if (level == null || !level.ObjectsLoaded) return;
+            if (level == null || !level.ObjectsLoaded) return UniTask.CompletedTask;
 
             SceneLoadingManager.Instance.GetSceneLoadedState(gameObject.scene.name, out _, out RegionRoot region);
-            if (region is PersistedRegionRoot { ObjectsLoaded: false }) return;
+            if (region is PersistedRegionRoot { ObjectsLoaded: false }) return UniTask.CompletedTask;
 
             Initialize();
             InitializeComponents();
-            PostLoad();
+            return PostLoad();
         }
 
         public void SetupDynamicInstance(ulong instanceID) {
@@ -285,7 +285,7 @@ namespace Infohazard.Sequencing {
             });
         }
 
-        public static void InitializeGameObjects(List<PersistedGameObject> list) {
+        public static UniTask InitializeGameObjects(List<PersistedGameObject> list) {
             foreach (PersistedGameObject obj in list) {
                 obj.Initialize();
             }
@@ -294,9 +294,7 @@ namespace Infohazard.Sequencing {
                 obj.InitializeComponents();
             }
 
-            foreach (PersistedGameObject obj in list) {
-                obj.PostLoad();
-            }
+            return UniTask.WhenAll(list.Select(obj => obj.PostLoad()));
         }
 
         private static Stack<Transform> _transforms = new Stack<Transform>();
