@@ -21,51 +21,48 @@
 // SOFTWARE.
 
 using System.Collections;
+using Cysharp.Threading.Tasks;
 using Infohazard.Core;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
-    public class LoadSceneOrLevelStep : MonoBehaviour, IExecutionStep {
+    public class LoadSceneOrLevelStep : ExecutionStepUniTask {
         [SerializeField] private SceneRef _defaultSceneToLoad;
         [SerializeField] private bool _makeActiveScene;
         [SerializeField] private bool _enableImmediately;
         [SerializeField] private SceneGroup _sceneGroup;
+        [SerializeField] private bool _waitToFinish = true;
 
         public static readonly ExecutionStepParameter<string> ParamSceneToLoad = new ExecutionStepParameter<string>();
-        
-        public bool IsFinished { get; private set; }
-        
-        public void Execute(ExecutionStepArguments arguments) {
-            StartCoroutine(CRT_Execution(arguments));
-        }
 
-        private IEnumerator CRT_Execution(ExecutionStepArguments arguments) {
+        protected override async UniTask ExecuteAsync(ExecutionStepArguments arguments) {
             IsFinished = false;
 
             string sceneToLoad = ParamSceneToLoad.GetOrDefault(arguments, _defaultSceneToLoad.Name);
-            AsyncOperation operation = SceneLoadingManager.Instance.LoadScene(sceneToLoad, _enableImmediately,
-                                                                         _makeActiveScene, _sceneGroup);
-            if (operation == null) {
+            SceneLoadOperations operation =
+                SceneLoadingManager.Instance.LoadScene(sceneToLoad, _enableImmediately, _makeActiveScene, _sceneGroup);
+            
+            if (!operation.IsValid) {
                 Debug.LogError($"Failed to load scene {sceneToLoad}.");
-                yield break;
+                return;
             }
             
             var level = LevelManifest.Instance.GetLevelWithSceneName(sceneToLoad);
 
             var loading = LoadingScreen.Instance;
-            if (loading) {
-                loading.SetProgressSource(operation);
+            if (loading != null && operation.IsValid) {
+                loading.SetProgressSource(operation.PartialOperation);
                 loading.SetText(level ? "Loading Level..." : "Loading...");
             }
             
             LoadInitialRegionsStep.ParamLoadingLevel.Set(arguments, level);
 
-            if (!_enableImmediately) {
-                while (operation.progress < 0.9f) {
-                    yield return null;
+            if (operation.IsValid && _waitToFinish) {
+                if (!_enableImmediately) {
+                    await operation.PartialOperation.WaitForCompletionTask();
+                } else {
+                    await operation.FullOperation.WaitForCompletionTask();
                 }
-            } else {
-                yield return operation;
             }
 
             IsFinished = true;

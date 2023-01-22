@@ -78,14 +78,15 @@ namespace Infohazard.Sequencing {
                 Debug.LogError($"Region {regionEntry.name} is always loaded, and cannot be passed as an argument to LoadRegion.");
                 return false;
             }
-            AsyncOperation op = SceneLoadingManager.Instance.LoadScene(regionEntry.Scene.Name, true, false, group);
-            return op != null;
+            SceneLoadOperations op =
+                SceneLoadingManager.Instance.LoadScene(regionEntry.Scene.Name, true, false, group);
+            return op.IsValid;
         }
 
-        public virtual bool UnloadRegion(LevelManifestRegionEntry regionEntry) {
+        public virtual IProgressSource UnloadRegion(LevelManifestRegionEntry regionEntry) {
             if (regionEntry.AlwaysLoaded) {
                 Debug.LogError($"Region {regionEntry.name} is always loaded, and cannot be passed as an argument to UnloadRegion.");
-                return false;
+                return null;
             }
             return SceneLoadingManager.Instance.UnloadScene(regionEntry.Scene.Name);
         }

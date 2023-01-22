@@ -54,29 +54,37 @@ namespace Infohazard.Sequencing {
             return state.Type;
         }
         
-        public List<AsyncOperation> LoadScenes(IEnumerable<string> scenes, bool autoActivate, SceneGroup group = null) {
-            List<AsyncOperation> ops = new List<AsyncOperation>();
-            foreach (string scene in scenes) {
-                AsyncOperation op = LoadScene(scene, autoActivate, false, group);
-                if (op != null) ops.Add(op);
+        public SceneLoadOperations LoadScenes(IEnumerable<string> scenes, bool autoActivate, SceneGroup group = null) {
+            List<IProgressSource> loadingFullSources = new List<IProgressSource>();
+            List<IProgressSource> loadingPartialSources = new List<IProgressSource>();
+            foreach (string sceneName in scenes) {
+                SceneLoadOperations sceneLoad = LoadScene(sceneName, autoActivate, false, group);
+                if (sceneLoad.IsValid) {
+                    loadingFullSources.Add(sceneLoad.FullOperation);
+                    loadingPartialSources.Add(sceneLoad.PartialOperation);
+                }
             }
 
-            return ops;
+            if (loadingFullSources.Count > 0) {
+                return new SceneLoadOperations {
+                    FullOperation = new MultiProgressSource(loadingFullSources),
+                    PartialOperation = new MultiProgressSource(loadingPartialSources),
+                };
+            }
+
+            return default;
         }
 
-        public AsyncOperation LoadScene(string sceneName, bool autoActivate, bool setActiveScene, SceneGroup group = null) {
+        public SceneLoadOperations LoadScene(string sceneName, bool autoActivate, bool setActiveScene, SceneGroup group) {
             if (!group) group = _defaultGroup;
             if (!_sceneGroups.TryGetValue(group, out SceneGroupInfo groupInfo)) {
                 groupInfo = new SceneGroupInfo();
                 _sceneGroups.Add(group, groupInfo);
             }
 
-            if (_sceneLoadingStates.TryGetValue(sceneName, out SceneState state) &&
-                (state.Type == SceneStateType.Loaded || state.Type == SceneStateType.Loading)) {
-                return null;
-            }
+            _sceneLoadingStates.TryGetValue(sceneName, out SceneState state);
 
-            if (state.Type == SceneStateType.Cancelled) {
+            if (state.Type == SceneStateType.Loading || state.Type == SceneStateType.Cancelled) {
                 foreach (SceneLoadingOperation loadingScene in groupInfo.LoadingScenes) {
                     if (loadingScene.SceneName != sceneName) continue;
                     loadingScene.IsCancelled = false;
@@ -86,56 +94,157 @@ namespace Infohazard.Sequencing {
                         Type = SceneStateType.Loading,
                         LoadingOperation = loadingScene,
                     };
-                    return loadingScene.Operation;
+                    return new SceneLoadOperations {
+                        FullOperation = loadingScene,
+                        PartialOperation = loadingScene.PartialOperation,
+                    };
                 }
             }
-            
-            AsyncOperation op = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-            if (op == null) return null;
-            op.allowSceneActivation = autoActivate;
+
+            if (state.Type == SceneStateType.Loaded) {
+                return default;
+            }
 
             SceneLoadingType type = LevelManifest.Instance.GetLevelWithSceneName(sceneName)
                 ? SceneLoadingType.Level
                 : LevelManifest.Instance.Levels.Any(l => l.GetRegionWithSceneName(sceneName))
                     ? SceneLoadingType.Region
                     : SceneLoadingType.Scene;
+
+            AsyncOperation sceneOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+            if (sceneOperation == null) {
+                return default;
+            }
+            sceneOperation.allowSceneActivation = autoActivate;
             
-            var loadingOperation = new SceneLoadingOperation {
-                Operation = op,
+            SceneLoadingOperation op = new SceneLoadingOperation {
+                Operation = sceneOperation,
+                IsCancelled = false,
                 SceneName = sceneName,
-                SetActiveOnComplete = setActiveScene,
                 SceneType = type,
+                SetActiveOnComplete = setActiveScene,
+                GroupInfo = groupInfo,
+                PartialOperation = new SceneLoadingPartialOperation {
+                    Operation = sceneOperation,
+                },
             };
+            op.Task = LoadSceneAsync(op);
             
             _sceneLoadingStates[sceneName] = new SceneState {
                 Type = SceneStateType.Loading,
-                LoadingOperation = loadingOperation,
+                LoadingOperation = op,
             };
             
-            groupInfo.LoadingScenes.Add(loadingOperation);
+            groupInfo.LoadingScenes.Add(op);
 
-            return op;
+            return new SceneLoadOperations {
+                FullOperation = op,
+                PartialOperation = op.PartialOperation,
+            };
         }
 
-        private void UnloadSceneInternal(Scene scene, SceneGroupInfo groupInfo) {
+        private async UniTask LoadSceneAsync(SceneLoadingOperation operation) {
+            await operation.Operation;
+                    
+            Scene scene = SceneManager.GetSceneByName(operation.SceneName);
+            if (!scene.isLoaded) {
+                Debug.LogError($"Unexpected: scene {operation.SceneName} not loaded after operation complete.");
+                operation.GroupInfo.LoadingScenes.Remove(operation);
+                _sceneLoadingStates[scene.name] = new SceneState {
+                    Type = SceneStateType.Unloaded,
+                    LoadedInfo = null,
+                };
+                return;
+            }
+
+            if (!operation.IsCancelled) {
+                var sceneInfo = new LoadedSceneInfo {
+                    Scene = scene,
+                    SceneType = operation.SceneType,
+                    Level = operation.SceneType == SceneLoadingType.Level
+                        ? scene.GetRootGameObjects().FirstOrDefaultWhere(
+                            (GameObject obj, out LevelRoot lvl) => obj.TryGetComponent(out lvl))
+                        : null,
+                    Region = operation.SceneType == SceneLoadingType.Region
+                        ? scene.GetRootGameObjects().FirstOrDefaultWhere(
+                            ((GameObject obj, out RegionRoot reg) => obj.TryGetComponent(out reg)))
+                        : null,
+                };
+            
+                _sceneLoadingStates[scene.name] = new SceneState {
+                    Type = SceneStateType.Loading,
+                    LoadedInfo = sceneInfo,
+                };
+
+                if (sceneInfo.Level) {
+                    await sceneInfo.Level.Initialize();
+                }
+
+                if (sceneInfo.Region) {
+                    await sceneInfo.Region.Initialize();
+                }
+
+                if (!operation.IsCancelled) {
+                    operation.GroupInfo.LoadedScenes.Add(sceneInfo);
+            
+                    _sceneLoadingStates[scene.name] = new SceneState {
+                        Type = SceneStateType.Loaded,
+                        LoadedInfo = sceneInfo,
+                    };
+                
+                    if (operation.SetActiveOnComplete) {
+                        SceneManager.SetActiveScene(scene);
+                    }
+                }
+            }
+
+            operation.GroupInfo.LoadingScenes.Remove(operation);
+            
+            if (operation.IsCancelled) {
+                UnloadCleanedUpScene(scene, operation.GroupInfo);
+            }
+                    
+            if (!_sceneGroups.Any(pair => pair.Value.LoadingScenes.Count > 0)) {
+                AllScenesFinishedLoading?.Invoke();
+            }
+        }
+
+        private IProgressSource UnloadSceneInternal(Scene scene, SceneGroupInfo groupInfo) {
             if (!_sceneLoadingStates.TryGetValue(scene.name, out SceneState state) || state.LoadedInfo == null) {
                 Debug.LogError($"Trying to unload scene {scene.name} which could not be found in the dictionary.");
-                return;
+                return null;
             }
             
             if (state.LoadedInfo.Level) state.LoadedInfo.Level.Cleanup();
             if (state.LoadedInfo.Region) state.LoadedInfo.Region.Cleanup();
             
+            return UnloadCleanedUpScene(scene, groupInfo);
+        }
+
+        private IProgressSource UnloadCleanedUpScene(Scene scene, SceneGroupInfo groupInfo) {
             AsyncOperation op = SceneManager.UnloadSceneAsync(scene);
             SceneUnloadingOperation unloadingOperation = new SceneUnloadingOperation {
                 Operation = op,
                 SceneName = scene.name,
+                GroupInfo = groupInfo,
             };
+            unloadingOperation.Task = UnloadSceneInternalAsync(unloadingOperation);
+
             _sceneLoadingStates[scene.name] = new SceneState {
                 Type = SceneStateType.Unloading,
                 UnloadingOperation = unloadingOperation,
             };
             groupInfo.UnloadingScenes.Add(unloadingOperation);
+            return unloadingOperation;
+        }
+
+        private async UniTask UnloadSceneInternalAsync(SceneUnloadingOperation operation) {
+            await operation.Operation;
+
+            operation.GroupInfo.UnloadingScenes.Remove(operation);
+            _sceneLoadingStates[operation.SceneName] = new SceneState {
+                Type = SceneStateType.Unloaded,
+            };
         }
 
         public void UnloadScenes(SceneGroup group = null) {
@@ -156,12 +265,12 @@ namespace Infohazard.Sequencing {
             groupInfo.LoadedScenes.Clear();
         }
 
-        public bool UnloadScene(string sceneName) {
+        public IProgressSource UnloadScene(string sceneName) {
             if (!_sceneLoadingStates.TryGetValue(sceneName, out SceneState state) ||
                 state.Type == SceneStateType.Unloaded ||
                 state.Type == SceneStateType.Cancelled ||
                 state.Type == SceneStateType.Unloading) {
-                return false;
+                return null;
             }
 
             if (state.Type == SceneStateType.Loaded) {
@@ -169,10 +278,10 @@ namespace Infohazard.Sequencing {
                     for (int index = 0; index < groupInfo.LoadedScenes.Count; index++) {
                         Scene scene = groupInfo.LoadedScenes[index].Scene;
                         if (scene.name != sceneName) continue;
-                        UnloadSceneInternal(scene, groupInfo);
+                        IProgressSource source = UnloadSceneInternal(scene, groupInfo);
                         groupInfo.LoadedScenes.RemoveAt(index);
                         
-                        return true;
+                        return source;
                     }
                 }
             } else if (state.Type == SceneStateType.Loading) {
@@ -184,13 +293,13 @@ namespace Infohazard.Sequencing {
                             Type = SceneStateType.Cancelled,
                             LoadingOperation = loadingScene,
                         };
-                        return true;
+                        return loadingScene;
                     }
                 }
             }
 
             Debug.LogError($"Invalid state: scene {sceneName} state is set to {state}, but could not find scene.");
-            return false;
+            return null;
         }
 
         public void ActivateLoadingScenes(SceneGroup group = null, SceneLoadingType typesToActivate = SceneLoadingType.All) {
@@ -204,88 +313,33 @@ namespace Infohazard.Sequencing {
             }
         }
 
-        private void Update() {
-            bool anyLoadFinished = false;
-            foreach (SceneGroupInfo groupInfo in _sceneGroups.Values) {
-                foreach (SceneLoadingOperation operation in groupInfo.LoadingScenes) {
-                    if (!operation.Operation.isDone) continue;
-                    
-                    Scene scene = SceneManager.GetSceneByName(operation.SceneName);
-                    if (!scene.isLoaded) {
-                        Debug.LogError($"Unexpected: scene {operation.SceneName} not loaded after operation complete.");
-                        continue;
-                    }
-
-                    if (operation.IsCancelled) {
-                        AsyncOperation op = SceneManager.UnloadSceneAsync(scene);
-                        SceneUnloadingOperation unloadingOperation = new SceneUnloadingOperation {
-                            Operation = op,
-                            SceneName = scene.name,
-                        };
-                        groupInfo.UnloadingScenes.Add(unloadingOperation);
-                        _sceneLoadingStates[scene.name] = new SceneState {
-                            Type = SceneStateType.Unloading,
-                            UnloadingOperation = unloadingOperation,
-                        };
-                        continue;
-                    }
-
-                    var sceneInfo = new LoadedSceneInfo {
-                        Scene = scene,
-                        SceneType = operation.SceneType,
-                        Level = operation.SceneType == SceneLoadingType.Level
-                            ? scene.GetRootGameObjects().FirstOrDefaultWhere(
-                                (GameObject obj, out LevelRoot lvl) => obj.TryGetComponent(out lvl))
-                            : null,
-                        Region = operation.SceneType == SceneLoadingType.Region
-                            ? scene.GetRootGameObjects().FirstOrDefaultWhere(
-                                ((GameObject obj, out RegionRoot reg) => obj.TryGetComponent(out reg)))
-                            : null,
-                    };
-                    
-                    groupInfo.LoadedScenes.Add(sceneInfo);
-                    anyLoadFinished = true;
-                    
-                    _sceneLoadingStates[scene.name] = new SceneState {
-                        Type = SceneStateType.Loaded,
-                        LoadedInfo = sceneInfo,
-                    };
-                    if (operation.SetActiveOnComplete) {
-                        SceneManager.SetActiveScene(scene);
-                    }
-
-                    if (sceneInfo.Level) sceneInfo.Level.Initialize().Forget();
-                    if (sceneInfo.Region) sceneInfo.Region.Initialize().Forget();
-                }
-
-                foreach (SceneUnloadingOperation operation in groupInfo.UnloadingScenes) {
-                    if (!operation.Operation.isDone) continue;
-                    _sceneLoadingStates[operation.SceneName] = new SceneState {
-                        Type = SceneStateType.Unloaded,
-                    };
-                }
-
-                groupInfo.LoadingScenes.RemoveAll(op => op.Operation.isDone);
-                groupInfo.UnloadingScenes.RemoveAll(op => op.Operation.isDone);
-            }
-
-            if (anyLoadFinished && !_sceneGroups.Any(pair => pair.Value.LoadingScenes.Count > 0)) {
-                AllScenesFinishedLoading?.Invoke();
-            }
-        }
-
         private class SceneGroupInfo {
             public List<SceneLoadingOperation> LoadingScenes { get; } = new List<SceneLoadingOperation>();
             public List<LoadedSceneInfo> LoadedScenes { get; } = new List<LoadedSceneInfo>();
             public List<SceneUnloadingOperation> UnloadingScenes { get; } = new List<SceneUnloadingOperation>();
         }
         
-        private class SceneLoadingOperation {
+        private class SceneLoadingOperation : IProgressSource {
+            public UniTask Task { get; set; }
             public AsyncOperation Operation { get; set; }
             public string SceneName { get; set; }
             public bool SetActiveOnComplete { get; set; }
             public SceneLoadingType SceneType { get; set; }
             public bool IsCancelled { get; set; }
+            public SceneGroupInfo GroupInfo { get; set; }
+            public float Progress => Operation.progress;
+            public SceneLoadingPartialOperation PartialOperation { get; set; }
+
+            public UniTask WaitForCompletionTask() => Task;
+        }
+        
+        private class SceneLoadingPartialOperation : IProgressSource {
+            public AsyncOperation Operation { get; set; }
+            public float Progress => Operation.progress / 0.9f;
+
+            public UniTask WaitForCompletionTask() {
+                return UniTask.WaitUntil(() => Operation.progress >= 0.9f);
+            }
         }
         
         private class LoadedSceneInfo {
@@ -295,9 +349,14 @@ namespace Infohazard.Sequencing {
             public RegionRoot Region { get; set; }
         }
         
-        private class SceneUnloadingOperation {
+        private class SceneUnloadingOperation : IProgressSource {
+            public UniTask Task { get; set; }
             public AsyncOperation Operation { get; set; }
             public string SceneName { get; set; }
+            public SceneGroupInfo GroupInfo { get; set; }
+            public float Progress => Operation.progress;
+
+            public UniTask WaitForCompletionTask() => Task;
         }
 
         private struct SceneState {
@@ -319,5 +378,12 @@ namespace Infohazard.Sequencing {
         Region = 1 << 2,
         
         All = Scene | Level | Region,
+    }
+
+    public struct SceneLoadOperations {
+        public IProgressSource FullOperation;
+        public IProgressSource PartialOperation;
+
+        public bool IsValid => FullOperation != null;
     }
 }

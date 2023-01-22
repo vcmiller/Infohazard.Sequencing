@@ -168,8 +168,6 @@ namespace Infohazard.Sequencing {
             Scene scene = gameObject.scene;
             SceneLoadingManager.Instance.GetSceneLoadedState(scene.name, out _, out RegionRoot region);
 
-            Debug.Log($"{name} initialized in scene {scene.name}");
-
             if (region is PersistedRegionRoot pRegion) Region = pRegion;
             if (Region) Region.Unloading += RegionRoot_Unloading;
 

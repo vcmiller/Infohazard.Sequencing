@@ -23,20 +23,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
+using Infohazard.Core;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
-    public class LoadInitialRegionsStep : MonoBehaviour, IExecutionStep {
+    public class LoadInitialRegionsStep : ExecutionStepUniTask {
         [SerializeField] private bool _enableImmediately;
         [SerializeField] private SceneGroup _sceneGroup;
+        [SerializeField] private bool _waitToFinish = true;
         
         public static readonly ExecutionStepParameter<LevelManifestLevelEntry> ParamLoadingLevel =
             new ExecutionStepParameter<LevelManifestLevelEntry>();
 
         public static readonly ExecutionStepParameter<IEnumerable<int>> ParamRegionsToLoad =
             new ExecutionStepParameter<IEnumerable<int>>();
-
-        public bool IsFinished { get; private set; }
 
         protected virtual IEnumerable<int> DefaultRegionsToLoad(LevelManifestLevelEntry level) {
             foreach (LevelManifestRegionEntry region in level.Regions) {
@@ -45,42 +46,35 @@ namespace Infohazard.Sequencing {
                 }
             }
         }
-        
-        public void Execute(ExecutionStepArguments arguments) {
-            if (ParamLoadingLevel.Get(arguments, out LevelManifestLevelEntry level) && level != null) {
-                StartCoroutine(CRT_Execution(level, arguments));
-            } else {
-                IsFinished = true;
-            }
-        }
 
-        private IEnumerator CRT_Execution(LevelManifestLevelEntry level, ExecutionStepArguments arguments) {
-            IsFinished = false;
+        protected override async UniTask ExecuteAsync(ExecutionStepArguments args) {
+            if (!ParamLoadingLevel.Get(args, out LevelManifestLevelEntry level) || level == null) {
+                return;
+            }
             
             HashSet<int> regionsToLoad =
-                new HashSet<int>(ParamRegionsToLoad.GetOrDefault(arguments, DefaultRegionsToLoad(level)));
+                new HashSet<int>(ParamRegionsToLoad.GetOrDefault(args, DefaultRegionsToLoad(level)));
             
-            List<AsyncOperation> regionOperations = SceneLoadingManager.Instance.LoadScenes(
-                level.Regions.Where(r => regionsToLoad.Contains(r.RegionID)).Select(r => r.Scene.Name),
+            SceneLoadOperations regionOperations = SceneLoadingManager.Instance.LoadScenes(
+                level.Regions.SelectWhere((LevelManifestRegionEntry r, out string sceneName) => {
+                    sceneName = r.Scene.Name;
+                    return regionsToLoad.Contains(r.RegionID);
+                }),
                 _enableImmediately, _sceneGroup);
 
-            var loading = LoadingScreen.Instance;
-            if (loading && regionOperations.Count > 0) {
+            LoadingScreen loading = LoadingScreen.Instance;
+            if (loading != null && regionOperations.IsValid) {
                 loading.SetText("Loading Regions...");
-                loading.SetProgressSource(regionOperations);
+                loading.SetProgressSource(regionOperations.PartialOperation);
             }
 
-            if (_enableImmediately) {
-                foreach (AsyncOperation operation in regionOperations) {
-                    yield return operation;
-                }
-            } else {
-                while (regionOperations.Count > 0 && regionOperations.Any(op => op.progress < 0.9f)) {
-                    yield return null;
+            if (regionOperations.IsValid && _waitToFinish) {
+                if (_enableImmediately) {
+                    await regionOperations.FullOperation.WaitForCompletionTask();
+                } else {
+                    await regionOperations.PartialOperation.WaitForCompletionTask();
                 }
             }
-            
-            IsFinished = true;
         }
     }
 }

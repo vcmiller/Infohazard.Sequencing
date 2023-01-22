@@ -92,7 +92,7 @@ namespace Infohazard.Sequencing {
             base.DeregisterRegion(region);
         }
 
-        public override bool UnloadRegion(LevelManifestRegionEntry regionEntry) {
+        public override IProgressSource UnloadRegion(LevelManifestRegionEntry regionEntry) {
             WillSave?.Invoke();
             return base.UnloadRegion(regionEntry);
         }
