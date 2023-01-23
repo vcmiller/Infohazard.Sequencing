@@ -158,7 +158,10 @@ namespace Infohazard.Sequencing {
         }
 
         private void Initialize() {
-            if (!_needsToInitialize) return;
+            if (!_needsToInitialize || Initialized || Initializing) {
+                Debug.LogError($"Trying to initialize object {this} multiple times.");
+                return;
+            }
             _needsToInitialize = false;
             Initializing = true;
 
