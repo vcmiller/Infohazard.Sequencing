@@ -30,6 +30,10 @@ namespace Infohazard.Sequencing {
         [SerializeField] private bool _saveRotation = true;
         [SerializeField] private bool _saveScale = false;
         [SerializeField] private bool _localSpace = false;
+        
+        public Vector3? OverrideSavePosition { get; set; }
+        public Quaternion? OverrideSaveRotation { get; set; }
+        public Vector3? OverrideSaveScale { get; set; }
 
         public override void LoadDefaultState() {
             base.LoadDefaultState();
@@ -57,9 +61,17 @@ namespace Infohazard.Sequencing {
         }
 
         private void SaveState() {
-            if (_savePosition) State.Position = _localSpace ? _transform.localPosition : _transform.position;
-            if (_saveRotation) State.Rotation = _localSpace ? _transform.localRotation : _transform.rotation;
-            if (_saveScale) State.Scale = _transform.localScale;
+            if (_savePosition) {
+                State.Position = OverrideSavePosition ?? (_localSpace ? _transform.localPosition : _transform.position);
+            }
+
+            if (_saveRotation) {
+                State.Rotation = OverrideSaveRotation ?? (_localSpace ? _transform.localRotation : _transform.rotation);
+            }
+
+            if (_saveScale) {
+                State.Scale = OverrideSaveScale ?? _transform.localScale;
+            }
         }
 
         private void Reset() {
