@@ -85,12 +85,7 @@ namespace Infohazard.Sequencing {
 
         private void OnDespawned() {
             if (!Application.isPlaying) return;
-            _needsToInitialize = false;
-            IsDynamicInstance = false;
-            Initialized = false;
-            if (Level) Level.WillSave -= LevelRoot_WillSave;
-            if (Region) Region.Unloading -= RegionRoot_Unloading;
-            _objects.Remove(_instanceID);
+            UnInitialize();
         }
 
 #if UNITY_EDITOR
@@ -158,7 +153,7 @@ namespace Infohazard.Sequencing {
         }
 
         private void Initialize() {
-            if (!_needsToInitialize || Initialized || Initializing) {
+            if (!_needsToInitialize || Initialized || Initializing || Level != null) {
                 Debug.LogError($"Trying to initialize object {this} multiple times.");
                 return;
             }
@@ -194,6 +189,17 @@ namespace Infohazard.Sequencing {
                     ConvertToDynamicInstance();
                 }
             }
+        }
+
+        private void UnInitialize() {
+            if (!Initialized) return;
+            
+            _needsToInitialize = false;
+            IsDynamicInstance = false;
+            Initialized = false;
+            if (Level) Level.WillSave -= LevelRoot_WillSave;
+            if (Region) Region.Unloading -= RegionRoot_Unloading;
+            _objects.Remove(_instanceID);
         }
 
         private void ConvertToDynamicInstance() {
