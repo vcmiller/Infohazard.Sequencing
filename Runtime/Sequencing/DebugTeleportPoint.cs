@@ -35,5 +35,9 @@ namespace Infohazard.Sequencing {
         public LevelManifestRegionEntry Region => _region;
         public IReadOnlyList<LevelManifestRegionEntry> AdditionalRegions => _additionalRegions;
         public UnityEvent OnWarp => _onWarp;
+
+        public virtual void TriggerOnWarp() {
+            OnWarp?.Invoke();
+        }
     }
 }
