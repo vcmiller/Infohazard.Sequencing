@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
@@ -28,11 +29,11 @@ namespace Infohazard.Sequencing {
         [SerializeField] private bool _saveProfile = true;
         [SerializeField] private bool _saveState = true;
         
-        public bool IsFinished => true;
-        public void Execute(ExecutionStepArguments arguments) {
+        public UniTask Execute(ExecutionStepArguments arguments) {
             if (_saveState) PersistenceManager.Instance.SaveStateData();
             if (_saveProfile) PersistenceManager.Instance.SaveProfileData();
             if (_saveGlobal) PersistenceManager.Instance.SaveGlobalData();
+            return UniTask.CompletedTask;
         }
     }
 }

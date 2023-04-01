@@ -20,12 +20,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
     public class WaitForScenesToLoad : MonoBehaviour, IExecutionStep {
         [SerializeField] private SceneLoadingType _types = SceneLoadingType.All;
-        public bool IsFinished => !SceneLoadingManager.Instance.IsLoadingAnyScenes(_types);
-        public void Execute(ExecutionStepArguments arguments) { }
+
+        public async UniTask Execute(ExecutionStepArguments arguments) {
+            while (SceneLoadingManager.Instance.IsLoadingAnyScenes(_types)) {
+                await UniTask.NextFrame();
+            }
+        }
     }
 }

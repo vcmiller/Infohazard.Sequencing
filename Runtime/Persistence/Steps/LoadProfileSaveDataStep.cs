@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
@@ -28,16 +29,16 @@ namespace Infohazard.Sequencing {
         [SerializeField] private bool _passMostRecentState = true;
 
         public static readonly ExecutionStepParameter<string> ParamProfileName = new ExecutionStepParameter<string>();
-        
-        public bool IsFinished => true;
-        
-        public void Execute(ExecutionStepArguments arguments) {
+
+        public UniTask Execute(ExecutionStepArguments arguments) {
             string profileToLoad = ParamProfileName.GetOrDefault(arguments, _defaultProfileName);
             PersistenceManager.Instance.LoadProfileData(profileToLoad);
 
             if (_passMostRecentState && !string.IsNullOrEmpty(PersistenceManager.Instance.LoadedProfileData?.MostRecentState)) {
                 LoadStateSaveDataStep.ParamStateName.Set(arguments, PersistenceManager.Instance.LoadedProfileData.MostRecentState);
             }
+            
+            return UniTask.CompletedTask;
         }
     }
 }

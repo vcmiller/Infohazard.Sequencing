@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 #if UNITY_EDITOR
@@ -32,11 +33,10 @@ using UnityEditor;
 
 namespace Infohazard.Sequencing {
     public class PassEditingSceneStep : MonoBehaviour, IExecutionStep {
-        public bool IsFinished => true;
 
         private ExecutionStepSequencer _executingSequencer;
         
-        public void Execute(ExecutionStepArguments arguments) {
+        public UniTask Execute(ExecutionStepArguments arguments) {
 #if UNITY_EDITOR
             var sceneParam = LoadSceneOrLevelStep.ParamSceneToLoad;
             var regionsParam = LoadRegionsStep.ParamRegionsToLoad;
@@ -65,6 +65,7 @@ namespace Infohazard.Sequencing {
                 }
             }
 #endif
+            return UniTask.CompletedTask;
         }
     }
 }

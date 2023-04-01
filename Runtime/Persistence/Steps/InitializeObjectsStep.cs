@@ -21,10 +21,11 @@
 // SOFTWARE.
 
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace Infohazard.Sequencing {
-    public class InitializeObjectsStep : ExecutionStepUniTask {
-        protected override async UniTask ExecuteAsync(ExecutionStepArguments args) {
+    public class InitializeObjectsStep : MonoBehaviour, IExecutionStep {
+        public async UniTask Execute(ExecutionStepArguments args) {
             var level = PersistedLevelRoot.Current;
             if (!level) {
                 return;

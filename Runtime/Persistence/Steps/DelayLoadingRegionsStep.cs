@@ -1,16 +1,16 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
     public class DelayLoadingRegionsStep : MonoBehaviour, IExecutionStep {
-        public bool IsFinished => true;
-        
-        public void Execute(ExecutionStepArguments arguments) {
-            var level = PersistedLevelRoot.Current;
+        public UniTask Execute(ExecutionStepArguments arguments) {
+            PersistedLevelRoot level = PersistedLevelRoot.Current;
             if (!level) {
-                return;
+                return UniTask.CompletedTask;
             }
 
             level.DelayRegionLoading();
+            return UniTask.CompletedTask;
         }
     }
 }

@@ -20,13 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
     public class ExternalSequencerStep : MonoBehaviour, IExecutionStep {
         [SerializeField] private ExecutionStepSequencer _sequencer;
         
-        public bool IsFinished => _sequencer.IsFinished;
-        public void Execute(ExecutionStepArguments arguments) => _sequencer.Execute(arguments);
+        public UniTask Execute(ExecutionStepArguments arguments) => _sequencer.Execute(arguments);
     }
 }

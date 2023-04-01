@@ -20,14 +20,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
     public class UnloadProfileSaveDataStep : MonoBehaviour, IExecutionStep {
-        public bool IsFinished => true;
-        
-        public void Execute(ExecutionStepArguments arguments) {
+        public UniTask Execute(ExecutionStepArguments arguments) {
             PersistenceManager.Instance.UnloadProfileData();
+            return UniTask.CompletedTask;
         }
     }
 }

@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using Cysharp.Threading.Tasks;
 using Infohazard.Core;
 using UnityEngine;
 
@@ -27,9 +28,9 @@ namespace Infohazard.Sequencing {
     public class PauseStep : MonoBehaviour, IExecutionStep {
         [SerializeField] private bool _paused;
         
-        public bool IsFinished => true;
-        public void Execute(ExecutionStepArguments arguments) {
+        public UniTask Execute(ExecutionStepArguments arguments) {
             Pause.Paused = _paused;
+            return UniTask.CompletedTask;
         }
     }
 

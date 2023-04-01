@@ -28,7 +28,7 @@ using Infohazard.Core;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
-    public class LoadRegionsStep : ExecutionStepUniTask {
+    public class LoadRegionsStep : MonoBehaviour, IExecutionStep {
         [SerializeField] private bool _enableImmediately;
         [SerializeField] private SceneGroup _sceneGroup;
         [SerializeField] private bool _waitToFinish = true;
@@ -47,7 +47,7 @@ namespace Infohazard.Sequencing {
             }
         }
 
-        protected override async UniTask ExecuteAsync(ExecutionStepArguments args) {
+        public async UniTask Execute(ExecutionStepArguments args) {
             if (!ParamLoadingLevel.Get(args, out LevelManifestLevelEntry level) || level == null) {
                 return;
             }

@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using Cysharp.Threading.Tasks;
 using Infohazard.Core;
 using UnityEngine;
 
@@ -27,15 +28,15 @@ namespace Infohazard.Sequencing {
     public class SetCurrentSavedSceneToLoadingSceneStep : MonoBehaviour, IExecutionStep {
         [SerializeField] private SceneRef _defaultScene;
         
-        public bool IsFinished => true;
-        public void Execute(ExecutionStepArguments arguments) {
-            var state = PersistenceManager.Instance.LoadedStateData;
+        public UniTask Execute(ExecutionStepArguments arguments) {
+            StateSaveData state = PersistenceManager.Instance.LoadedStateData;
             if (state == null) {
                 Debug.LogError("Trying to save current scene when no state data is loaded.");
-                return;
+                return UniTask.CompletedTask;
             }
 
             state.CurrentScene = LoadSceneOrLevelStep.ParamSceneToLoad.GetOrDefault(arguments, _defaultScene.Name);
+            return UniTask.CompletedTask;
         }
     }
 }

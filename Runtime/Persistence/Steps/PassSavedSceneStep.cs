@@ -21,16 +21,16 @@
 // SOFTWARE.
 
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Infohazard.Core;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
     public class PassSavedSceneStep : MonoBehaviour, IExecutionStep {
-        public bool IsFinished => true;
 
         [SerializeField] private SceneRef _defaultScene;
         
-        public void Execute(ExecutionStepArguments arguments) {
+        public UniTask Execute(ExecutionStepArguments arguments) {
             var state = PersistenceManager.Instance.LoadedStateData;
             string sceneToLoad = _defaultScene.Name;
             if (state != null && !string.IsNullOrEmpty(state.CurrentScene)) {
@@ -39,7 +39,7 @@ namespace Infohazard.Sequencing {
             LoadSceneOrLevelStep.ParamSceneToLoad.Set(arguments, sceneToLoad);
 
             var level = LevelManifest.Instance.GetLevelWithSceneName(sceneToLoad);
-            if (!level) return;
+            if (!level) return UniTask.CompletedTask;
             
             List<int> regionsToLoad = new List<int>();
             foreach (LevelManifestRegionEntry region in level.Regions) {
@@ -51,6 +51,8 @@ namespace Infohazard.Sequencing {
             if (regionsToLoad.Count > 0) {
                 LoadRegionsStep.ParamRegionsToLoad.Set(arguments, regionsToLoad);
             }
+            
+            return UniTask.CompletedTask;
         }
     }
 }

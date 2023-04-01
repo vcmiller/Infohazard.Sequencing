@@ -20,14 +20,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using Cysharp.Threading.Tasks;
 using Infohazard.Sequencing;
 using UnityEngine;
 
 namespace SBR.Persistence {
     public class LoadGlobalSaveDataStep : MonoBehaviour, IExecutionStep {
-        public bool IsFinished => true;
-        public void Execute(ExecutionStepArguments arguments) {
+        public UniTask Execute(ExecutionStepArguments arguments) {
             PersistenceManager.Instance.LoadGlobalData();
+            return UniTask.CompletedTask;
         }
     }
 }

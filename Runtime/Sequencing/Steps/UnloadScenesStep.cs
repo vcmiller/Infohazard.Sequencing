@@ -20,16 +20,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
     public class UnloadScenesStep : MonoBehaviour, IExecutionStep {
         [SerializeField] private SceneGroup _groupToUnload;
-        
-        public bool IsFinished => true;
-        
-        public void Execute(ExecutionStepArguments arguments) {
+
+        public UniTask Execute(ExecutionStepArguments arguments) {
             SceneLoadingManager.Instance.UnloadScenes(_groupToUnload);
+            return UniTask.CompletedTask;
         }
     }
 }

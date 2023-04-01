@@ -20,14 +20,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using Cysharp.Threading.Tasks;
 using Infohazard.Core;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
     public class ClearObjectPoolsStep : MonoBehaviour, IExecutionStep {
-        public bool IsFinished => true;
-        public void Execute(ExecutionStepArguments arguments) {
+        
+        public UniTask Execute(ExecutionStepArguments arguments) {
             PoolManager.Instance.ClearInactiveObjects();
+            return UniTask.CompletedTask;
         }
     }
 

@@ -28,13 +28,11 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Infohazard.Sequencing {
-    public class ExecutionStepSequencer : MonoBehaviour, IExecutionStep {
+    public class ExecutionStepSequencer : MonoBehaviour {
         [SerializeField] private bool _playOnAwake = true;
         
         private List<IExecutionStep> _steps;
         private int _currentStep;
-        
-        public bool IsFinished { get; private set; }
 
         public static bool InitialSceneIsLoaded {
             get {
@@ -64,69 +62,21 @@ namespace Infohazard.Sequencing {
                     SceneControl.Quit();
                 }
 
-                Execute(new ExecutionStepArguments());
+                Execute(new ExecutionStepArguments()).Forget();
             }
         }
 
-        public void Execute(ExecutionStepArguments arguments) {
-            StartCoroutine(ExecuteForwardCoroutine(arguments));
-        }
-
-        public IEnumerator ExecuteForwardCoroutine(ExecutionStepArguments arguments) {
-            IsFinished = false;
-            
-            for (int index = 0; index < _steps.Count; index++) {
-                _currentStep = index;
-                IExecutionStep step = _steps[index];
-                step.Execute(arguments);
-                while (!step.IsFinished) {
-                    yield return null;
-                }
+        public async UniTask Execute(ExecutionStepArguments arguments) {
+            for (int i = 0; i < _steps.Count; i++) {
+                _currentStep = i;
+                IExecutionStep step = _steps[i];
+                await step.Execute(arguments);
             }
-
-            IsFinished = true;
         }
     }
 
     public interface IExecutionStep {
-        bool IsFinished { get; }
-        
-        void Execute(ExecutionStepArguments arguments);
-    }
-
-    public abstract class ExecutionStepCoroutine : MonoBehaviour, IExecutionStep {
-        public virtual bool IsFinished { get; protected set; }
-
-        protected Coroutine Coroutine;
-
-        public virtual void Execute(ExecutionStepArguments args) {
-            IsFinished = false;
-            Coroutine = StartCoroutine(ExecuteCoroutineInternal(args));
-        }
-
-        private IEnumerator ExecuteCoroutineInternal(ExecutionStepArguments args) {
-            yield return ExecuteCoroutine(args);
-            IsFinished = true;
-            Coroutine = null;
-        }
-
-        protected abstract IEnumerator ExecuteCoroutine(ExecutionStepArguments args);
-    }
-
-    public abstract class ExecutionStepUniTask : MonoBehaviour, IExecutionStep {
-        public virtual bool IsFinished { get; protected set; }
-
-        public virtual void Execute(ExecutionStepArguments args) {
-            IsFinished = false;
-            ExecuteInternalAsync(args).Forget();
-        }
-
-        private async UniTask ExecuteInternalAsync(ExecutionStepArguments args) {
-            await ExecuteAsync(args);
-            IsFinished = true;
-        }
-
-        protected abstract UniTask ExecuteAsync(ExecutionStepArguments args);
+        public UniTask Execute(ExecutionStepArguments arguments);
     }
 
     public class ExecutionStepArguments {
