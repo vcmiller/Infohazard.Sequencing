@@ -39,7 +39,7 @@ namespace Infohazard.Sequencing {
         public void Execute(ExecutionStepArguments arguments) {
 #if UNITY_EDITOR
             var sceneParam = LoadSceneOrLevelStep.ParamSceneToLoad;
-            var regionsParam = LoadInitialRegionsStep.ParamRegionsToLoad;
+            var regionsParam = LoadRegionsStep.ParamRegionsToLoad;
 
             int level = EditorPrefs.GetInt("OpenLevel", -1);
             LevelManifestLevelEntry levelEntry = LevelManifest.Instance.GetLevelWithID(level);

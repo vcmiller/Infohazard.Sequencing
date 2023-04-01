@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace Infohazard.Sequencing {
     public class PersistedLevelRoot : LevelRoot {
@@ -33,6 +34,7 @@ namespace Infohazard.Sequencing {
         public bool ObjectsLoaded { get; private set; }
         
         private bool _dirty;
+        private bool _delayLoadingRegions;
 
         private Dictionary<int, LoadedRegionInfo> _loadedRegionData = new Dictionary<int, LoadedRegionInfo>();
 
@@ -46,16 +48,25 @@ namespace Infohazard.Sequencing {
         }
 
         public virtual async UniTask LoadObjects() {
+            if (ObjectsLoading) {
+                Debug.LogError("Simultaneous calls to LoadObjects().");
+            }
+            
             ObjectsLoading = true;
             
             List<PersistedRegionRoot> persistedRegions = LoadedRegions.Values.OfType<PersistedRegionRoot>().ToList();
+            _delayLoadingRegions = false;
 
             List<PersistedGameObject> gameObjects = new List<PersistedGameObject>();
-            
-            await PersistedGameObject.LoadDynamicObjects(SaveData.Objects, gameObject.scene, DynamicObjectRoot);
-            PersistedGameObject.CollectGameObjects(gameObject.scene, gameObjects);
+
+            if (!ObjectsLoaded) {
+                await PersistedGameObject.LoadDynamicObjects(SaveData.Objects, gameObject.scene, DynamicObjectRoot);
+                PersistedGameObject.CollectGameObjects(gameObject.scene, gameObjects);
+            }
             
             foreach (PersistedRegionRoot regionRoot in persistedRegions) {
+                if (regionRoot.ObjectsLoaded) continue;
+                
                 await regionRoot.LoadDynamicObjects();
                 PersistedGameObject.CollectGameObjects(regionRoot.gameObject.scene, gameObjects);
             }
@@ -79,7 +90,7 @@ namespace Infohazard.Sequencing {
             await base.RegisterRegion(region);
             GetOrLoadRegionData(region.ManifestEntry).Loaded = true;
 
-            if (ObjectsLoaded && region is PersistedRegionRoot root) {
+            if (ObjectsLoaded && !_delayLoadingRegions && region is PersistedRegionRoot root) {
                 await root.LoadDynamicObjects();
                 List<PersistedGameObject> gameObjects = new List<PersistedGameObject>();
                 PersistedGameObject.CollectGameObjects(root.gameObject.scene, gameObjects);
@@ -101,6 +112,8 @@ namespace Infohazard.Sequencing {
             _dirty = true;
             SaveData.StateChanged -= SaveData_StateChanged;
         }
+
+        public void DelayRegionLoading() => _delayLoadingRegions = true;
 
         public RegionSaveData GetOrLoadRegionData(LevelManifestRegionEntry region) {
             if (!_loadedRegionData.TryGetValue(region.RegionID, out LoadedRegionInfo info)) {

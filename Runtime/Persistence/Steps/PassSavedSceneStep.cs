@@ -49,7 +49,7 @@ namespace Infohazard.Sequencing {
             }
 
             if (regionsToLoad.Count > 0) {
-                LoadInitialRegionsStep.ParamRegionsToLoad.Set(arguments, regionsToLoad);
+                LoadRegionsStep.ParamRegionsToLoad.Set(arguments, regionsToLoad);
             }
         }
     }

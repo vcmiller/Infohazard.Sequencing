@@ -28,7 +28,7 @@ using Infohazard.Core;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
-    public class LoadInitialRegionsStep : ExecutionStepUniTask {
+    public class LoadRegionsStep : ExecutionStepUniTask {
         [SerializeField] private bool _enableImmediately;
         [SerializeField] private SceneGroup _sceneGroup;
         [SerializeField] private bool _waitToFinish = true;

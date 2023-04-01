@@ -55,7 +55,7 @@ namespace Infohazard.Sequencing {
                 loading.SetText(level ? "Loading Level..." : "Loading...");
             }
             
-            LoadInitialRegionsStep.ParamLoadingLevel.Set(arguments, level);
+            LoadRegionsStep.ParamLoadingLevel.Set(arguments, level);
 
             if (operation.IsValid && _waitToFinish) {
                 if (!_enableImmediately) {
