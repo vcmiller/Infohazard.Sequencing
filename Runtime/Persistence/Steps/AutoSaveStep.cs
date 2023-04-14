@@ -24,25 +24,14 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
-    public class LoadStateSaveDataStep : MonoBehaviour, IExecutionStep {
-        [SerializeField] private string _defaultStateName;
-
-        public static readonly ExecutionStepParameter<string> ParamStateName = new ExecutionStepParameter<string>();
+    public class AutoSaveStep : MonoBehaviour, IExecutionStep {
+        public static readonly ExecutionStepParameter<bool> DoAutoSave = new ExecutionStepParameter<bool>();
 
         public UniTask Execute(ExecutionStepArguments arguments) {
-            string stateToLoad = ParamStateName.GetOrDefault(arguments, _defaultStateName);
-
-            bool emptyState = string.IsNullOrEmpty(stateToLoad);
-            if (emptyState) {
-                PersistenceManager.Instance.LoadEmptyStateData();
-            } else {
-                PersistenceManager.Instance.LoadStateData(stateToLoad);
+            if (DoAutoSave.GetOrDefault(arguments, true)) {
+                SaveStateManager.Instance.AutoSave();
             }
             
-            // When loading an existing state, no need to auto save.
-            // When loading an empty state, we do need to auto save.
-            AutoSaveStep.DoAutoSave.Set(arguments, emptyState);
-
             return UniTask.CompletedTask;
         }
     }

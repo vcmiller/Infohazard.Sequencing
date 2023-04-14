@@ -221,18 +221,30 @@ namespace Infohazard.Sequencing {
             LoadedStateData.Initialized = true;
         }
 
+        public void LoadEmptyStateData() {
+            StateSaveData data = new StateSaveData();
+
+            LoadedStateData = data;
+            data.Initialized = true;
+        }
+
         public void UnloadStateData() {
             LoadedStateData = null;
             _loadedStateDataDirty = false;
         }
 
         public void SaveStateData() {
-            if (!_loadedStateDataDirty) return;
+            if (!_loadedStateDataDirty || string.IsNullOrEmpty(LoadedStateData.StateName)) return;
             SaveStateDataAs(LoadedStateData.StateName);
         }
 
         public void SaveStateDataAs(string newStateName) {
-            if (newStateName != LoadedStateData.StateName) {
+            if (string.IsNullOrEmpty(newStateName)) {
+                Debug.LogError("A state cannot be saved without a name.");
+                return;
+            }
+            
+            if (newStateName != LoadedStateData.StateName && !string.IsNullOrEmpty(LoadedStateData.StateName)) {
                 _dataHandler.CopyStateSaveData(LoadedProfileData.ProfileName, LoadedStateData.StateName, newStateName);
             }
             

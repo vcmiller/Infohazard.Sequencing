@@ -274,6 +274,11 @@ namespace Infohazard.Sequencing {
                 CopyDirectory(subdir.FullName, tempPath);
             }
         }
+
+        [ContextMenu("Delete Save Data")]
+        private void DeleteSaveData() {
+            Directory.Delete(GlobalDataFolder, true);
+        }
 #endregion
     }
 }
