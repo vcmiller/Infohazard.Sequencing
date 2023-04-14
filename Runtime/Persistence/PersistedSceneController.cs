@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
@@ -39,7 +40,7 @@ namespace Infohazard.Sequencing {
         public override void GoToMainMenu() {
             ExecutionStepArguments args = new ExecutionStepArguments();
             LoadSceneOrLevelStep.ParamSceneToLoad.Set(args, MainMenuScene.Name);
-            _goToMainMenuSequencer.Execute(args);
+            _goToMainMenuSequencer.Execute(args).Forget();
         }
 
         public virtual void LoadState(string state) {
@@ -50,7 +51,7 @@ namespace Infohazard.Sequencing {
             
             ExecutionStepArguments args = new ExecutionStepArguments();
             LoadStateSaveDataStep.ParamStateName.Set(args, state);
-            _loadStateSequencer.Execute(args);
+            _loadStateSequencer.Execute(args).Forget();
         }
 
         public virtual void LoadProfile(string profile) {
@@ -61,7 +62,7 @@ namespace Infohazard.Sequencing {
             
             ExecutionStepArguments args = new ExecutionStepArguments();
             LoadProfileSaveDataStep.ParamProfileName.Set(args, profile);
-            _loadProfileSequencer.Execute(args);
+            _loadProfileSequencer.Execute(args).Forget();
         }
 
         public virtual void LoadMostRecentProfile() {
