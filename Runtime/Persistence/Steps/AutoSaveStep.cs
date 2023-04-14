@@ -28,7 +28,7 @@ namespace Infohazard.Sequencing {
         public static readonly ExecutionStepParameter<bool> DoAutoSave = new ExecutionStepParameter<bool>();
 
         public UniTask Execute(ExecutionStepArguments arguments) {
-            if (DoAutoSave.GetOrDefault(arguments, true)) {
+            if (DoAutoSave.GetOrDefault(arguments, true) && LevelRoot.Current != null) {
                 SaveStateManager.Instance.AutoSave();
             }
             
