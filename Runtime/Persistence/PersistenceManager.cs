@@ -246,6 +246,8 @@ namespace Infohazard.Sequencing {
             
             if (newStateName != LoadedStateData.StateName && !string.IsNullOrEmpty(LoadedStateData.StateName)) {
                 _dataHandler.CopyStateSaveData(LoadedProfileData.ProfileName, LoadedStateData.StateName, newStateName);
+            } else {
+                _dataHandler.ClearStateSaveData(LoadedProfileData.ProfileName, newStateName);
             }
             
             LoadedStateData.StateName = newStateName;
