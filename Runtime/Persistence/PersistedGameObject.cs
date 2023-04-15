@@ -140,7 +140,7 @@ namespace Infohazard.Sequencing {
 
         public void SetupDynamicInstance(ulong instanceID) {
             if (!_needsToInitialize) {
-                Debug.LogError("SetupDynamicInstance can only be called before a spawned object is initialized.");
+                Debug.LogError("SetupDynamicInstance can only be called before a spawned object is initialized.", this);
             }
 
             _instanceID = instanceID;
@@ -153,8 +153,12 @@ namespace Infohazard.Sequencing {
         }
 
         private void Initialize() {
+            if (name == "AirlockLong") {
+                int i = 0;
+            }
+            
             if (!_needsToInitialize || Initialized || Initializing || Level != null) {
-                Debug.LogError($"Trying to initialize object {this} multiple times.");
+                Debug.LogError($"Trying to initialize object {this} multiple times.", this);
                 return;
             }
             _needsToInitialize = false;
@@ -204,7 +208,7 @@ namespace Infohazard.Sequencing {
 
         private void ConvertToDynamicInstance() {
             if (IsDynamicInstance) {
-                Debug.LogError($"Trying to convert object {name} with ID {_instanceID} to dynamic, but it already is.");
+                Debug.LogError($"Trying to convert object {name} with ID {_instanceID} to dynamic, but it already is.", this);
                 return;
             }
 
@@ -223,7 +227,7 @@ namespace Infohazard.Sequencing {
 
         public void TransitionToRegion(PersistedRegionRoot newRoot) {
             if (_prefabReference?.RuntimeKeyIsValid() != true) {
-                Debug.LogError($"Trying to transition object {name}, which doesn't have a dynamic prefab ID.");
+                Debug.LogError($"Trying to transition object {name}, which doesn't have a dynamic prefab ID.", this);
                 return;
             }
 

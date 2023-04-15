@@ -75,6 +75,11 @@ namespace Infohazard.Sequencing {
 
             ObjectsLoading = false;
             ObjectsLoaded = true;
+            
+            foreach (PersistedRegionRoot regionRoot in persistedRegions) {
+                if (regionRoot.ObjectsLoaded) continue;
+                regionRoot.FinishedLoading();
+            }
         }
 
         public override void Cleanup() {
@@ -95,6 +100,7 @@ namespace Infohazard.Sequencing {
                 List<PersistedGameObject> gameObjects = new List<PersistedGameObject>();
                 PersistedGameObject.CollectGameObjects(root.gameObject.scene, gameObjects);
                 await PersistedGameObject.InitializeGameObjects(gameObjects);
+                root.FinishedLoading();
             }
         }
 

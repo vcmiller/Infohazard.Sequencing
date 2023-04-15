@@ -44,6 +44,9 @@ namespace Infohazard.Sequencing {
 
         public virtual async UniTask LoadDynamicObjects() {
             await PersistedGameObject.LoadDynamicObjects(SaveData.Objects, gameObject.scene, DynamicObjectRoot);
+        }
+
+        public void FinishedLoading() {
             ObjectsLoaded = true;
         }
     }
