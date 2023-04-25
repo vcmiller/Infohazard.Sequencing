@@ -153,10 +153,6 @@ namespace Infohazard.Sequencing {
         }
 
         private void Initialize() {
-            if (name == "AirlockLong") {
-                int i = 0;
-            }
-            
             if (!_needsToInitialize || Initialized || Initializing || Level != null) {
                 Debug.LogError($"Trying to initialize object {this} multiple times.", this);
                 return;
