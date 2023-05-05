@@ -21,7 +21,10 @@
 // SOFTWARE.
 
 namespace Infohazard.Sequencing {
+    public delegate void ChangeRegionDelegate(RegionRoot oldRegion, RegionRoot newRegion);
+    
     public interface IRegionAwareObject {
+        public event ChangeRegionDelegate CurrentRegionChanged;
         public RegionRoot CurrentRegion { get; set; }
         public bool CanTransitionTo(RegionRoot region);
     }

@@ -34,10 +34,14 @@ namespace Infohazard.Sequencing {
             _pgo = GetComponent<PersistedGameObject>();
         }
 
+        public event ChangeRegionDelegate CurrentRegionChanged;
+
         public RegionRoot CurrentRegion {
             get => _pgo.Region;
             set {
                 if (value == _pgo.Region) return;
+
+                RegionRoot oldRegion = _pgo.Region;
                 if (_pgo.Initialized) {
                     _pgo.TransitionToRegion((PersistedRegionRoot)value);
                 }
@@ -47,6 +51,8 @@ namespace Infohazard.Sequencing {
                 t.parent = null;
                 SceneManager.MoveGameObjectToScene(_pgo.gameObject, value.gameObject.scene);
                 t.parent = value.DynamicObjectRoot;
+                
+                CurrentRegionChanged?.Invoke(oldRegion, value);
             }
         }
         

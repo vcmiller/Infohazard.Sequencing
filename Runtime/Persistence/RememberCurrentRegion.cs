@@ -40,7 +40,8 @@ namespace Infohazard.Sequencing {
         }
         
         private RegionRoot _region;
-        public event Action RegionChanged;
+        public event ChangeRegionDelegate CurrentRegionChanged;
+
         public RegionRoot CurrentRegion {
             get {
                 if (_needsToInit) Initialize();
@@ -48,8 +49,9 @@ namespace Infohazard.Sequencing {
             }
             set {
                 if (_region == value) return;
+                RegionRoot oldRegion = _region;
                 _region = value;
-                RegionChanged?.Invoke();
+                CurrentRegionChanged?.Invoke(oldRegion, value);
             }
         }
 
