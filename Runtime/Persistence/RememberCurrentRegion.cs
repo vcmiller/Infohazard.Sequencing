@@ -25,74 +25,61 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Infohazard.Sequencing {
-    public class RememberCurrentRegion : MonoBehaviour, IRegionAwareObject {
+    public class RememberCurrentRegion : PersistedComponent<RememberCurrentRegion.StateInfo>, IRegionAwareObject {
         [SerializeField] private bool _onlyPersistedRegions = false;
+        [SerializeField] private LevelManifestRegionEntry _initialRegion;
 
-        private bool _needsToInit = false;
-        
-        private LevelRoot _level;
-        public LevelRoot Level {
-            get {
-                if (_needsToInit) Initialize();
-                return _level;
-            }
-            private set => _level = value;
-        }
-        
         private RegionRoot _region;
         public event ChangeRegionDelegate CurrentRegionChanged;
 
         public RegionRoot CurrentRegion {
-            get {
-                if (_needsToInit) Initialize();
-                return _region;
-            }
+            get => _region;
+            
             set {
                 if (_region == value) return;
                 RegionRoot oldRegion = _region;
                 _region = value;
                 CurrentRegionChanged?.Invoke(oldRegion, value);
+                State.RegionID = _region.RegionIndex;
             }
         }
 
-        public PersistedObjectCollection Container =>
-            CurrentRegion is PersistedRegionRoot pRegion
-                ? pRegion.SaveData.Objects
-                : Level is PersistedLevelRoot pLevel
-                    ? pLevel.SaveData.Objects
-                    : null;
-        
-        public Scene RegionScene =>
-            CurrentRegion is PersistedRegionRoot
-                ? CurrentRegion.gameObject.scene
-                : Level is PersistedLevelRoot
-                    ? Level.gameObject.scene
-                    : default;
-
-        private void OnEnable() {
-            _needsToInit = true;
+        public override void LoadDefaultState() {
+            if (_initialRegion != null &&
+                LevelRoot.Current.LoadedRegions.TryGetValue(_initialRegion.RegionID, out RegionRoot region) &&
+                CanTransitionTo(region)) {
+                CurrentRegion = region;
+            } else {
+                SceneLoadingManager.Instance.GetSceneLoadedState(gameObject.scene.name, out _, out region);
+                CurrentRegion = CanTransitionTo(region) ? region : null;
+            }
         }
 
-        private void OnDisable() {
-            _needsToInit = false;
-            CurrentRegion = null;
-            Level = null;
-        }
-
-        private void Update() {
-            if (_needsToInit) Initialize();
-        }
-
-        private void Initialize() {
-            _needsToInit = false;
-            SceneLoadingManager.Instance.GetSceneLoadedState(gameObject.scene.name, out _, out RegionRoot region);
-            CurrentRegion = (!_onlyPersistedRegions || region is PersistedRegionRoot) ? region : null;
-            Level = LevelRoot.Current;
+        public override void LoadState() {
+            if (State.RegionID >= 0 &&
+                LevelRoot.Current.LoadedRegions.TryGetValue(State.RegionID, out RegionRoot region) &&
+                CanTransitionTo(region)) {
+                CurrentRegion = region;
+            }
         }
 
         public bool CanTransitionTo(RegionRoot region) {
             return !_onlyPersistedRegions || region is PersistedRegionRoot;
         }
-    }
+        
+        [Serializable]
+        public class StateInfo : PersistedData {
+            [SerializeField]
+            private int _regionID = -1;
 
+            public int RegionID {
+                get => _regionID;
+                set {
+                    if (_regionID == value) return;
+                    _regionID = value;
+                    NotifyStateChanged();
+                }
+            }
+        }
+    }
 }
