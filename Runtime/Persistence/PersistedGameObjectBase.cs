@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Infohazard.Core;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Infohazard.Sequencing {
     public abstract class PersistedGameObjectBase : MonoBehaviour {
@@ -58,6 +59,11 @@ namespace Infohazard.Sequencing {
 
         public void WriteState() {
             foreach (IPersistedComponent component in Components) {
+                if (!(Object) component) {
+                    Debug.LogException(new Exception($"GameObject: {gameObject} has a destroyed component."));
+                    continue;
+                }
+                
                 component.WriteState();
             }
         }
