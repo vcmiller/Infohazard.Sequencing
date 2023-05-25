@@ -197,8 +197,8 @@ namespace Infohazard.Sequencing {
             _needsToInitialize = false;
             IsDynamicInstance = false;
             Initialized = false;
-            if (Level) Level.WillSave -= LevelRoot_WillSave;
-            if (Region) Region.Unloading -= RegionRoot_Unloading;
+            if (!ReferenceEquals(Level, null)) Level.WillSave -= LevelRoot_WillSave;
+            if (!ReferenceEquals(Region, null)) Region.Unloading -= RegionRoot_Unloading;
             _objects.Remove(_instanceID);
         }
 
