@@ -17,6 +17,8 @@ namespace Infohazard.Sequencing {
         
         protected List<IPersistedComponent> Components;
 
+        private string _gameObjectName;
+
         public event Action LoadCompleted;
 
         protected void OnLoadCompleted() {
@@ -26,6 +28,7 @@ namespace Infohazard.Sequencing {
         protected virtual void Awake() {
             if (!Application.isPlaying) return;
 
+            _gameObjectName = gameObject.name;
             Components = new List<IPersistedComponent>();
             GetPersistedComponents(transform, Components);
         }
@@ -60,7 +63,7 @@ namespace Infohazard.Sequencing {
         public void WriteState() {
             foreach (IPersistedComponent component in Components) {
                 if (!(Object) component) {
-                    Debug.LogException(new Exception($"GameObject: {gameObject} has a destroyed component."));
+                    Debug.LogException(new Exception($"GameObject: {_gameObjectName} has a destroyed component."), this);
                     continue;
                 }
                 
