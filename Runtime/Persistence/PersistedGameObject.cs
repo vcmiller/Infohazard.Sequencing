@@ -45,8 +45,36 @@ namespace Infohazard.Sequencing {
         [SerializeField] private bool _immediatelyConvert = false;
 
         private bool _hasCheckedId;
-        public PersistedLevelRoot Level { get; private set; }
-        public PersistedRegionRoot Region { get; private set; }
+
+        public PersistedLevelRoot Level {
+            get => _level;
+            private set {
+                if (ReferenceEquals(_level, value)) return;
+
+                if (!ReferenceEquals(_level, null))
+                    _level.WillSave -= LevelRoot_WillSave;
+                
+                _level = value;
+
+                if (!ReferenceEquals(_level, null))
+                    _level.WillSave += LevelRoot_WillSave;
+            }
+        }
+
+        public PersistedRegionRoot Region {
+            get => _region;
+            private set {
+                if (ReferenceEquals(_region, value)) return;
+
+                if (!ReferenceEquals(_region, null))
+                    _region.Unloading -= RegionRoot_Unloading;
+                
+                _region = value;
+
+                if (!ReferenceEquals(_region, null))
+                    _region.Unloading += RegionRoot_Unloading;
+            }
+        }
 
         public AssetReferenceGameObject PrefabReference => _prefabReference;
 
@@ -55,6 +83,8 @@ namespace Infohazard.Sequencing {
         public override ulong InstanceID => _instanceID;
 
         private bool _needsToInitialize = false;
+        private PersistedRegionRoot _region;
+        private PersistedLevelRoot _level;
 
         private static Dictionary<ulong, PersistedGameObject> _objects = new Dictionary<ulong, PersistedGameObject>();
         public static IReadOnlyDictionary<ulong, PersistedGameObject> Objects => _objects;
@@ -161,13 +191,11 @@ namespace Infohazard.Sequencing {
             Initializing = true;
 
             Level = PersistedLevelRoot.Current;
-            if (Level) Level.WillSave += LevelRoot_WillSave;
 
             Scene scene = gameObject.scene;
             SceneLoadingManager.Instance.GetSceneLoadedState(scene.name, out _, out RegionRoot region);
 
             if (region is PersistedRegionRoot pRegion) Region = pRegion;
-            if (Region) Region.Unloading += RegionRoot_Unloading;
 
             PersistedObjectCollection container = Container;
             SaveData = container != null
@@ -197,8 +225,8 @@ namespace Infohazard.Sequencing {
             _needsToInitialize = false;
             IsDynamicInstance = false;
             Initialized = false;
-            if (!ReferenceEquals(Level, null)) Level.WillSave -= LevelRoot_WillSave;
-            if (!ReferenceEquals(Region, null)) Region.Unloading -= RegionRoot_Unloading;
+            Level = null;
+            Region = null;
             _objects.Remove(_instanceID);
         }
 
