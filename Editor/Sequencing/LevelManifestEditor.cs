@@ -129,7 +129,7 @@ namespace Infohazard.Sequencing.Editor {
             }
         }
 
-        private void SaveAction(ScriptableObject asset, string path) {
+        private void SaveAction(Object asset, string path) {
             AssetDatabase.AddObjectToAsset(asset, target);
             AssetDatabase.SaveAssets();
             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(asset));
