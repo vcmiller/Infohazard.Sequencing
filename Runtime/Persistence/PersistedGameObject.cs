@@ -151,12 +151,12 @@ namespace Infohazard.Sequencing {
             }
 #endif
 
-            if (_needsToInitialize) {
-                CheckDynamicRegister().Forget();
-            }
+            CheckDynamicRegister().Forget();
         }
 
-        private UniTask CheckDynamicRegister() {
+        public UniTask CheckDynamicRegister() {
+            if (!_needsToInitialize) return UniTask.CompletedTask;
+            
             var level = PersistedLevelRoot.Current;
             if (level == null || !level.ObjectsLoaded) return UniTask.CompletedTask;
 
