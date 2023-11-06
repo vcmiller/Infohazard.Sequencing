@@ -22,11 +22,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using Infohazard.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEditor.SceneManagement;
+#endif
 
 namespace Infohazard.Sequencing {
     public class SceneLoadingManager : Singleton<SceneLoadingManager> {
@@ -42,7 +48,8 @@ namespace Infohazard.Sequencing {
         public bool IsLoadingAnyScenes(SceneLoadingType type = SceneLoadingType.All) =>
             _sceneGroups.Values.Any(g => g.LoadingScenes.Any(op => (op.SceneType & type) != 0));
 
-        public SceneStateType GetSceneLoadedState(string sceneName, out LevelRoot levelRoot, out RegionRoot regionRoot) {
+        public SceneStateType
+            GetSceneLoadedState(string sceneName, out LevelRoot levelRoot, out RegionRoot regionRoot) {
             if (_sceneLoadingStates.TryGetValue(sceneName, out SceneState state) && state.LoadedInfo != null) {
                 levelRoot = state.LoadedInfo.Level;
                 regionRoot = state.LoadedInfo.Region;
@@ -50,10 +57,10 @@ namespace Infohazard.Sequencing {
                 levelRoot = null;
                 regionRoot = null;
             }
-            
+
             return state.Type;
         }
-        
+
         public SceneLoadOperations LoadScenes(IEnumerable<string> scenes, bool autoActivate, SceneGroup group = null) {
             List<IProgressSource> loadingFullSources = new List<IProgressSource>();
             List<IProgressSource> loadingPartialSources = new List<IProgressSource>();
@@ -75,12 +82,15 @@ namespace Infohazard.Sequencing {
             return default;
         }
 
-        public SceneLoadOperations LoadScene(string sceneName, bool autoActivate, bool setActiveScene, SceneGroup group) {
+        public SceneLoadOperations LoadScene(string sceneNameOrPath, bool autoActivate, bool setActiveScene,
+                                             SceneGroup group) {
             if (!group) group = _defaultGroup;
             if (!_sceneGroups.TryGetValue(group, out SceneGroupInfo groupInfo)) {
                 groupInfo = new SceneGroupInfo();
                 _sceneGroups.Add(group, groupInfo);
             }
+
+            string sceneName = Path.GetFileNameWithoutExtension(sceneNameOrPath);
 
             _sceneLoadingStates.TryGetValue(sceneName, out SceneState state);
 
@@ -105,18 +115,33 @@ namespace Infohazard.Sequencing {
                 return default;
             }
 
-            SceneLoadingType type = LevelManifest.Instance.GetLevelWithSceneName(sceneName)
+            SceneLoadingType type = LevelManifest.Instance.GetLevelWithSceneNameOrPath(sceneName)
                 ? SceneLoadingType.Level
                 : LevelManifest.Instance.Levels.Any(l => l.GetRegionWithSceneName(sceneName))
                     ? SceneLoadingType.Region
                     : SceneLoadingType.Scene;
 
             AsyncOperation sceneOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+
             if (sceneOperation == null) {
+#if UNITY_EDITOR
+                sceneOperation = EditorSceneManager.LoadSceneAsyncInPlayMode(
+                    sceneNameOrPath, new LoadSceneParameters(LoadSceneMode.Additive));
+
+                if (sceneOperation != null) {
+                    Debug.LogWarning($"Loading scene {sceneNameOrPath} that is not in the build settings. This will not work in a build.");
+                }
+
+                if (sceneOperation == null) {
+                    return default;
+                }
+#else
                 return default;
+#endif
             }
+
             sceneOperation.allowSceneActivation = autoActivate;
-            
+
             SceneLoadingOperation op = new SceneLoadingOperation {
                 Operation = sceneOperation,
                 IsCancelled = false,
@@ -129,12 +154,12 @@ namespace Infohazard.Sequencing {
                 },
             };
             op.Task = LoadSceneAsync(op);
-            
+
             _sceneLoadingStates[sceneName] = new SceneState {
                 Type = SceneStateType.Loading,
                 LoadingOperation = op,
             };
-            
+
             groupInfo.LoadingScenes.Add(op);
 
             return new SceneLoadOperations {
@@ -145,7 +170,7 @@ namespace Infohazard.Sequencing {
 
         private async UniTask LoadSceneAsync(SceneLoadingOperation operation) {
             await operation.Operation;
-                    
+
             Scene scene = SceneManager.GetSceneByName(operation.SceneName);
             if (!scene.isLoaded) {
                 Debug.LogError($"Unexpected: scene {operation.SceneName} not loaded after operation complete.");
@@ -170,7 +195,7 @@ namespace Infohazard.Sequencing {
                             ((GameObject obj, out RegionRoot reg) => obj.TryGetComponent(out reg)))
                         : null,
                 };
-            
+
                 _sceneLoadingStates[scene.name] = new SceneState {
                     Type = SceneStateType.Loading,
                     LoadedInfo = sceneInfo,
@@ -186,12 +211,12 @@ namespace Infohazard.Sequencing {
 
                 if (!operation.IsCancelled) {
                     operation.GroupInfo.LoadedScenes.Add(sceneInfo);
-            
+
                     _sceneLoadingStates[scene.name] = new SceneState {
                         Type = SceneStateType.Loaded,
                         LoadedInfo = sceneInfo,
                     };
-                
+
                     if (operation.SetActiveOnComplete) {
                         SceneManager.SetActiveScene(scene);
                     }
@@ -199,11 +224,11 @@ namespace Infohazard.Sequencing {
             }
 
             operation.GroupInfo.LoadingScenes.Remove(operation);
-            
+
             if (operation.IsCancelled) {
                 UnloadCleanedUpScene(scene, operation.GroupInfo);
             }
-                    
+
             if (!_sceneGroups.Any(pair => pair.Value.LoadingScenes.Count > 0)) {
                 AllScenesFinishedLoading?.Invoke();
             }
@@ -214,10 +239,10 @@ namespace Infohazard.Sequencing {
                 Debug.LogError($"Trying to unload scene {scene.name} which could not be found in the dictionary.");
                 return null;
             }
-            
+
             if (state.LoadedInfo.Level) state.LoadedInfo.Level.Cleanup();
             if (state.LoadedInfo.Region) state.LoadedInfo.Region.Cleanup();
-            
+
             return UnloadCleanedUpScene(scene, groupInfo);
         }
 
@@ -262,6 +287,7 @@ namespace Infohazard.Sequencing {
             foreach (LoadedSceneInfo scene in groupInfo.LoadedScenes) {
                 UnloadSceneInternal(scene.Scene, groupInfo);
             }
+
             groupInfo.LoadedScenes.Clear();
         }
 
@@ -280,7 +306,7 @@ namespace Infohazard.Sequencing {
                         if (scene.name != sceneName) continue;
                         IProgressSource source = UnloadSceneInternal(scene, groupInfo);
                         groupInfo.LoadedScenes.RemoveAt(index);
-                        
+
                         return source;
                     }
                 }
@@ -302,7 +328,8 @@ namespace Infohazard.Sequencing {
             return null;
         }
 
-        public void ActivateLoadingScenes(SceneGroup group = null, SceneLoadingType typesToActivate = SceneLoadingType.All) {
+        public void ActivateLoadingScenes(SceneGroup group = null,
+                                          SceneLoadingType typesToActivate = SceneLoadingType.All) {
             if (!group) group = _defaultGroup;
             if (!_sceneGroups.TryGetValue(group, out SceneGroupInfo groupInfo)) return;
 
@@ -318,7 +345,7 @@ namespace Infohazard.Sequencing {
             public List<LoadedSceneInfo> LoadedScenes { get; } = new List<LoadedSceneInfo>();
             public List<SceneUnloadingOperation> UnloadingScenes { get; } = new List<SceneUnloadingOperation>();
         }
-        
+
         private class SceneLoadingOperation : IProgressSource {
             public UniTask Task { get; set; }
             public AsyncOperation Operation { get; set; }
@@ -332,7 +359,7 @@ namespace Infohazard.Sequencing {
 
             public UniTask WaitForCompletionTask() => Task;
         }
-        
+
         private class SceneLoadingPartialOperation : IProgressSource {
             public AsyncOperation Operation { get; set; }
             public float Progress => Operation.progress / 0.9f;
@@ -341,14 +368,14 @@ namespace Infohazard.Sequencing {
                 return UniTask.WaitUntil(() => Operation.progress >= 0.9f);
             }
         }
-        
+
         private class LoadedSceneInfo {
             public Scene Scene { get; set; }
             public SceneLoadingType SceneType { get; set; }
             public LevelRoot Level { get; set; }
             public RegionRoot Region { get; set; }
         }
-        
+
         private class SceneUnloadingOperation : IProgressSource {
             public UniTask Task { get; set; }
             public AsyncOperation Operation { get; set; }
@@ -368,7 +395,11 @@ namespace Infohazard.Sequencing {
     }
 
     public enum SceneStateType {
-        Unloaded, Loading, Cancelled, Loaded, Unloading
+        Unloaded,
+        Loading,
+        Cancelled,
+        Loaded,
+        Unloading
     }
 
     [Flags]
@@ -376,7 +407,7 @@ namespace Infohazard.Sequencing {
         Scene = 1 << 0,
         Level = 1 << 1,
         Region = 1 << 2,
-        
+
         All = Scene | Level | Region,
     }
 

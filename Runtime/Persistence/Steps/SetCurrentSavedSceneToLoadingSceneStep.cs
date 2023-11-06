@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System.IO;
 using Cysharp.Threading.Tasks;
 using Infohazard.Core;
 using UnityEngine;
@@ -35,7 +36,8 @@ namespace Infohazard.Sequencing {
                 return UniTask.CompletedTask;
             }
 
-            state.CurrentScene = LoadSceneOrLevelStep.ParamSceneToLoad.GetOrDefault(arguments, _defaultScene.Name);
+            state.CurrentScene = Path.GetFileNameWithoutExtension(
+                LoadSceneOrLevelStep.ParamSceneToLoad.GetOrDefault(arguments, _defaultScene.Name));
             return UniTask.CompletedTask;
         }
     }

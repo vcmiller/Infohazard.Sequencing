@@ -43,8 +43,8 @@ namespace Infohazard.Sequencing {
             return _levels.FirstOrDefault(l => l.LevelID == id);
         }
 
-        public LevelManifestLevelEntry GetLevelWithSceneName(string sceneName) {
-            return _levels.FirstOrDefault(l => l.Scene.Name == sceneName);
+        public LevelManifestLevelEntry GetLevelWithSceneNameOrPath(string sceneNameOrPath) {
+            return _levels.FirstOrDefault(l => l.Scene.Name == sceneNameOrPath || l.Scene.Path == sceneNameOrPath);
         }
 
         public LevelManifestLevelEntry GetLevelWithName(string levelName) {

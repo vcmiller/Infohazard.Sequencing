@@ -29,7 +29,7 @@ namespace Infohazard.Sequencing {
         [SerializeField] private SceneRef _sceneToLoad;
         
         public UniTask Execute(ExecutionStepArguments arguments) {
-            LoadSceneOrLevelStep.ParamSceneToLoad.Set(arguments, _sceneToLoad.Name);
+            LoadSceneOrLevelStep.ParamSceneToLoad.Set(arguments, _sceneToLoad.Path);
             return UniTask.CompletedTask;
         }
     }

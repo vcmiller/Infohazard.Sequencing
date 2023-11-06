@@ -36,7 +36,7 @@ namespace Infohazard.Sequencing {
         public static readonly ExecutionStepParameter<string> ParamSceneToLoad = new ExecutionStepParameter<string>();
 
         public async UniTask Execute(ExecutionStepArguments arguments) {
-            string sceneToLoad = ParamSceneToLoad.GetOrDefault(arguments, _defaultSceneToLoad.Name);
+            string sceneToLoad = ParamSceneToLoad.GetOrDefault(arguments, _defaultSceneToLoad.Path);
             SceneLoadOperations operation =
                 SceneLoadingManager.Instance.LoadScene(sceneToLoad, _enableImmediately, _makeActiveScene, _sceneGroup);
             
@@ -45,7 +45,7 @@ namespace Infohazard.Sequencing {
                 return;
             }
             
-            var level = LevelManifest.Instance.GetLevelWithSceneName(sceneToLoad);
+            var level = LevelManifest.Instance.GetLevelWithSceneNameOrPath(sceneToLoad);
 
             var loading = LoadingScreen.Instance;
             if (loading != null && operation.IsValid) {

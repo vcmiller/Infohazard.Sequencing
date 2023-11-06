@@ -38,13 +38,13 @@ namespace Infohazard.Sequencing {
         
         public UniTask Execute(ExecutionStepArguments arguments) {
 #if UNITY_EDITOR
-            var sceneParam = LoadSceneOrLevelStep.ParamSceneToLoad;
-            var regionsParam = LoadRegionsStep.ParamRegionsToLoad;
+            ExecutionStepParameter<string> sceneParam = LoadSceneOrLevelStep.ParamSceneToLoad;
+            ExecutionStepParameter<IEnumerable<int>> regionsParam = LoadRegionsStep.ParamRegionsToLoad;
 
             int level = EditorPrefs.GetInt("OpenLevel", -1);
             LevelManifestLevelEntry levelEntry = LevelManifest.Instance.GetLevelWithID(level);
             if (levelEntry != null) {
-                sceneParam.Set(arguments, levelEntry.Scene.Name);
+                sceneParam.Set(arguments, levelEntry.Scene.Path);
                 List<int> openRegions = new List<int>();
                 foreach (LevelManifestRegionEntry region in levelEntry.Regions) {
                     if (EditorPrefs.GetBool($"OpenLevelRegions[{region.RegionID}].loaded", false)) {
@@ -60,7 +60,7 @@ namespace Infohazard.Sequencing {
                 for (int i = 1; i < EditorBuildSettings.scenes.Length; i++) {
                     var scene = EditorBuildSettings.scenes[i];
                     if (scene.path == scenePath) {
-                        sceneParam.Set(arguments, Path.GetFileNameWithoutExtension(scenePath));
+                        sceneParam.Set(arguments, scenePath);
                     }
                 }
             }

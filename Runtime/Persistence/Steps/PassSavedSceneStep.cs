@@ -38,7 +38,7 @@ namespace Infohazard.Sequencing {
             }
             LoadSceneOrLevelStep.ParamSceneToLoad.Set(arguments, sceneToLoad);
 
-            var level = LevelManifest.Instance.GetLevelWithSceneName(sceneToLoad);
+            var level = LevelManifest.Instance.GetLevelWithSceneNameOrPath(sceneToLoad);
             if (!level) return UniTask.CompletedTask;
             
             List<int> regionsToLoad = new List<int>();

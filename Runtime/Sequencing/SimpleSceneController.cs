@@ -39,7 +39,7 @@ namespace Infohazard.Sequencing {
 
         public virtual void GoToMainMenu() {
             ExecutionStepArguments args = new ExecutionStepArguments();
-            LoadSceneOrLevelStep.ParamSceneToLoad.Set(args, _mainMenuScene.Name);
+            LoadSceneOrLevelStep.ParamSceneToLoad.Set(args, _mainMenuScene.Path);
             _goToSceneSequencer.Execute(args);
         }
     }
