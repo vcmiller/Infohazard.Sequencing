@@ -10,11 +10,11 @@ namespace Infohazard.Sequencing {
         public ObjectSaveData SaveData { get; protected set; }
 
         public bool Initialized { get; protected set; }
-        
+
         public bool Initializing { get; protected set; }
-        
+
         public abstract ulong InstanceID { get; }
-        
+
         protected List<IPersistedComponent> Components;
 
         private string _gameObjectName;
@@ -22,9 +22,10 @@ namespace Infohazard.Sequencing {
         public event Action LoadCompleted;
 
         protected void OnLoadCompleted() {
+            if (!this) return;
             LoadCompleted?.Invoke();
         }
-        
+
         protected virtual void Awake() {
             if (!Application.isPlaying) return;
 
@@ -38,7 +39,7 @@ namespace Infohazard.Sequencing {
             TempComponents.Clear();
             transform.GetComponents(TempComponents);
             components.AddRange(TempComponents);
-            
+
             for (int i = 0; i < transform.childCount; i++) {
                 Transform child = transform.GetChild(i);
                 if (child.TryGetComponent(out PersistedGameObjectBase _)) continue;
@@ -66,7 +67,7 @@ namespace Infohazard.Sequencing {
                     Debug.LogException(new Exception($"GameObject: {_gameObjectName} has a destroyed component."), this);
                     continue;
                 }
-                
+
                 component.WriteState();
             }
         }
