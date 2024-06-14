@@ -1,17 +1,17 @@
 // The MIT License (MIT)
-// 
+//
 // Copyright (c) 2022-present Vincent Miller
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,13 +28,13 @@ using UnityEngine;
 namespace Infohazard.Sequencing {
     public class LevelRoot : MonoBehaviour {
         public static LevelRoot Current { get; private set; }
-        
+
         [SerializeField] private LevelManifestLevelEntry _manifestEntry;
         [SerializeField] private Transform _dynamicObjectRoot;
         [SerializeField] private DebugTeleportPoint[] _debugTeleportPoints;
-        
+
         private Dictionary<int, RegionRoot> _loadedRegions = new Dictionary<int, RegionRoot>();
-        
+
         public int LevelIndex => _manifestEntry.LevelID;
         public LevelManifestLevelEntry ManifestEntry => _manifestEntry;
         public Transform DynamicObjectRoot => _dynamicObjectRoot;
@@ -42,7 +42,7 @@ namespace Infohazard.Sequencing {
         public IReadOnlyList<DebugTeleportPoint> TeleportPoints => _debugTeleportPoints;
         public bool Initialized { get; private set; }
 
-        public Action Unloading;
+        public event Action Unloading;
 
         internal virtual UniTask RegisterRegion(RegionRoot region) {
             _loadedRegions.Add(region.RegionIndex, region);
@@ -55,7 +55,7 @@ namespace Infohazard.Sequencing {
 
         public virtual UniTask Initialize() {
             Unloading?.Invoke();
-            
+
             if (Current) {
                 Debug.LogError("Trying to initialize a LevelRoot when one is already active!");
             } else {
