@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Infohazard.Core;
@@ -33,11 +34,17 @@ namespace Infohazard.Sequencing {
 
         [SerializeField, Expandable]
         private LevelManifestRegionEntry[] _regions;
+        
+        [SerializeField, Expandable(requiredInterfaces:typeof(ICustomInitialRegionsLogic))]
+        private ScriptableObject _customInitialRegionsLogic;
 
         public string DisplayName => _displayName;
         public int LevelID => _levelID;
         public SceneRef Scene => _scene;
         public IReadOnlyList<LevelManifestRegionEntry> Regions => _regions;
+
+        public ICustomInitialRegionsLogic CustomInitialRegionsLogic =>
+            (ICustomInitialRegionsLogic)_customInitialRegionsLogic;
 
         public LevelManifestRegionEntry GetRegionWithID(int id) {
             return _regions.FirstOrDefault(r => r.RegionID == id);
@@ -45,6 +52,16 @@ namespace Infohazard.Sequencing {
 
         public LevelManifestRegionEntry GetRegionWithSceneName(string sceneName) {
             return _regions.FirstOrDefault(r => r.Scene.Name == sceneName);
+        }
+        
+        public IEnumerable<int> GetInitialRegions() {
+            ICustomInitialRegionsLogic logic = CustomInitialRegionsLogic;
+            IEnumerable<LevelManifestRegionEntry> regions = logic?.GetInitialRegions();
+            if (regions != null) {
+                return regions.Select(r => r.RegionID);
+            }
+
+            return _regions.Where(r => r.LoadedByDefault || r.AlwaysLoaded).Select(r => r.RegionID);
         }
     }
 }

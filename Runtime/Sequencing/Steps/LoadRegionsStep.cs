@@ -40,11 +40,7 @@ namespace Infohazard.Sequencing {
             new ExecutionStepParameter<IEnumerable<int>>();
 
         protected virtual IEnumerable<int> DefaultRegionsToLoad(LevelManifestLevelEntry level) {
-            foreach (LevelManifestRegionEntry region in level.Regions) {
-                if (region.LoadedByDefault || region.AlwaysLoaded) {
-                    yield return region.RegionID;
-                }
-            }
+            return level.GetInitialRegions();
         }
 
         public async UniTask Execute(ExecutionStepArguments args) {
