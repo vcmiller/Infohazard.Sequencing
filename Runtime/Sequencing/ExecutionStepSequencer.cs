@@ -62,8 +62,12 @@ namespace Infohazard.Sequencing {
                     SceneControl.Quit();
                 }
 
-                Execute(new ExecutionStepArguments()).Forget();
+                ExecuteAndForget();
             }
+        }
+        
+        public void ExecuteAndForget() {
+            Execute(new ExecutionStepArguments()).Forget();
         }
 
         public async UniTask Execute(ExecutionStepArguments arguments) {
