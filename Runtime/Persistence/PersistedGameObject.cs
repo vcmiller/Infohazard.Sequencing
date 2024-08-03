@@ -1,17 +1,17 @@
 // The MIT License (MIT)
-// 
+//
 // Copyright (c) 2022-present Vincent Miller
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -53,7 +53,7 @@ namespace Infohazard.Sequencing {
 
                 if (!ReferenceEquals(_level, null))
                     _level.WillSave -= LevelRoot_WillSave;
-                
+
                 _level = value;
 
                 if (!ReferenceEquals(_level, null))
@@ -68,7 +68,7 @@ namespace Infohazard.Sequencing {
 
                 if (!ReferenceEquals(_region, null))
                     _region.Unloading -= RegionRoot_Unloading;
-                
+
                 _region = value;
 
                 if (!ReferenceEquals(_region, null))
@@ -156,7 +156,7 @@ namespace Infohazard.Sequencing {
 
         public UniTask CheckDynamicRegister() {
             if (!_needsToInitialize) return UniTask.CompletedTask;
-            
+
             var level = PersistedLevelRoot.Current;
             if (level == null || !level.ObjectsLoaded) return UniTask.CompletedTask;
 
@@ -221,7 +221,7 @@ namespace Infohazard.Sequencing {
 
         private void UnInitialize() {
             if (!Initialized) return;
-            
+
             _needsToInitialize = false;
             IsDynamicInstance = false;
             Initialized = false;
@@ -246,6 +246,7 @@ namespace Infohazard.Sequencing {
         }
 
         public void RegisterDestroyed() {
+            _objects.Remove(_instanceID);
             Container?.RegisterObjectDestroyed(_instanceID);
         }
 
