@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Infohazard.Core;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
@@ -63,6 +64,7 @@ namespace Infohazard.Sequencing {
                 Initialized = true;
             }
 
+            Pause.TimeScale = 1;
             return UniTask.CompletedTask;
         }
 
