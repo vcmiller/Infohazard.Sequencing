@@ -1,17 +1,17 @@
 // The MIT License (MIT)
-// 
-// Copyright (c) 2022-present Vincent Miller
-// 
+//
+// Copyright (c) 2026-present Val Miller
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -166,14 +166,14 @@ namespace Infohazard.Sequencing {
         }
 
 #region Private Methods
-        
+
         private static IEnumerable<string> GetFoldersInDirectoryContainingFile(string path, string file) {
             if (!Directory.Exists(path)) yield break;
 
             foreach (DirectoryInfo directoryInfo in new DirectoryInfo(path).EnumerateDirectories()) {
                 foreach (FileInfo fileInfo in directoryInfo.EnumerateFiles()) {
                     if (fileInfo.Name != file) continue;
-                    
+
                     string name = directoryInfo.Name;
                     int underscore = name.IndexOf('_');
                     if (underscore >= 0) {
@@ -225,7 +225,7 @@ namespace Infohazard.Sequencing {
                 if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) {
                     Directory.CreateDirectory(dir);
                 }
-                
+
                 using Stream stream = new FileStream(path, FileMode.Create);
                 serializer.Write(stream, data);
             } catch (IOException ex) {
@@ -242,7 +242,7 @@ namespace Infohazard.Sequencing {
                 Directory.Delete(path, true);
             }
         }
-        
+
         private static void CopyDirectory(string sourceDirName, string destDirName)
         {
             // Get the subdirectories for the specified directory.
@@ -256,9 +256,9 @@ namespace Infohazard.Sequencing {
             }
 
             DirectoryInfo[] dirs = dir.GetDirectories();
-        
-            // If the destination directory doesn't exist, create it.       
-            Directory.CreateDirectory(destDirName);        
+
+            // If the destination directory doesn't exist, create it.
+            Directory.CreateDirectory(destDirName);
 
             // Get the files in the directory and copy them to the new location.
             FileInfo[] files = dir.GetFiles();
