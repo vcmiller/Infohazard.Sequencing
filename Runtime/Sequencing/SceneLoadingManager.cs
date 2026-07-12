@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -168,6 +168,26 @@ namespace Infohazard.Sequencing {
             };
         }
 
+        public async UniTask InitializeLoadedScene(Scene scene, SceneLoadingType type, SceneGroup group = null) {
+            if (!group) group = _defaultGroup;
+            if (!_sceneGroups.TryGetValue(group, out SceneGroupInfo groupInfo)) {
+                groupInfo = new SceneGroupInfo();
+                _sceneGroups.Add(group, groupInfo);
+            }
+
+            SceneLoadingOperation operation = new() {
+                Operation = null,
+                PartialOperation = null,
+                SceneName = scene.name,
+                SetActiveOnComplete = false,
+                SceneType = type,
+                IsCancelled = false,
+                GroupInfo = groupInfo,
+            };
+
+            await InitializeLoadedScene(scene, operation);
+        }
+
         private async UniTask LoadSceneAsync(SceneLoadingOperation operation) {
             await operation.Operation;
 
@@ -183,44 +203,7 @@ namespace Infohazard.Sequencing {
             }
 
             if (!operation.IsCancelled) {
-                var sceneInfo = new LoadedSceneInfo {
-                    Scene = scene,
-                    SceneType = operation.SceneType,
-                    Level = operation.SceneType == SceneLoadingType.Level
-                        ? scene.GetRootGameObjects().FirstOrDefaultWhere(
-                            (GameObject obj, out LevelRoot lvl) => obj.TryGetComponent(out lvl))
-                        : null,
-                    Region = operation.SceneType == SceneLoadingType.Region
-                        ? scene.GetRootGameObjects().FirstOrDefaultWhere(
-                            ((GameObject obj, out RegionRoot reg) => obj.TryGetComponent(out reg)))
-                        : null,
-                };
-
-                _sceneLoadingStates[scene.name] = new SceneState {
-                    Type = SceneStateType.Loading,
-                    LoadedInfo = sceneInfo,
-                };
-
-                if (sceneInfo.Level) {
-                    await sceneInfo.Level.Initialize();
-                }
-
-                if (sceneInfo.Region) {
-                    await sceneInfo.Region.Initialize();
-                }
-
-                if (!operation.IsCancelled) {
-                    operation.GroupInfo.LoadedScenes.Add(sceneInfo);
-
-                    _sceneLoadingStates[scene.name] = new SceneState {
-                        Type = SceneStateType.Loaded,
-                        LoadedInfo = sceneInfo,
-                    };
-
-                    if (operation.SetActiveOnComplete) {
-                        SceneManager.SetActiveScene(scene);
-                    }
-                }
+                await InitializeLoadedScene(scene, operation);
             }
 
             operation.GroupInfo.LoadingScenes.Remove(operation);
@@ -231,6 +214,47 @@ namespace Infohazard.Sequencing {
 
             if (!_sceneGroups.Any(pair => pair.Value.LoadingScenes.Count > 0)) {
                 AllScenesFinishedLoading?.Invoke();
+            }
+        }
+
+        private async UniTask InitializeLoadedScene(Scene scene, SceneLoadingOperation operation) {
+            LoadedSceneInfo sceneInfo = new() {
+                Scene = scene,
+                SceneType = operation.SceneType,
+                Level = operation.SceneType == SceneLoadingType.Level
+                    ? scene.GetRootGameObjects().FirstOrDefaultWhere(
+                        (GameObject obj, out LevelRoot lvl) => obj.TryGetComponent(out lvl))
+                    : null,
+                Region = operation.SceneType == SceneLoadingType.Region
+                    ? scene.GetRootGameObjects().FirstOrDefaultWhere(
+                        ((GameObject obj, out RegionRoot reg) => obj.TryGetComponent(out reg)))
+                    : null,
+            };
+
+            _sceneLoadingStates[scene.name] = new SceneState {
+                Type = SceneStateType.Loading,
+                LoadedInfo = sceneInfo,
+            };
+
+            if (sceneInfo.Level) {
+                await sceneInfo.Level.Initialize();
+            }
+
+            if (sceneInfo.Region) {
+                await sceneInfo.Region.Initialize();
+            }
+
+            if (!operation.IsCancelled) {
+                operation.GroupInfo.LoadedScenes.Add(sceneInfo);
+
+                _sceneLoadingStates[scene.name] = new SceneState {
+                    Type = SceneStateType.Loaded,
+                    LoadedInfo = sceneInfo,
+                };
+
+                if (operation.SetActiveOnComplete) {
+                    SceneManager.SetActiveScene(scene);
+                }
             }
         }
 
