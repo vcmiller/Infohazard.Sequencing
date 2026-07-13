@@ -140,41 +140,34 @@ namespace Infohazard.Sequencing {
         }
 #endif
 
-        private void Update() {
 #if UNITY_EDITOR
+        private void Update() {
             if (!Application.isPlaying) {
                 if ((_instanceID == 0 || !_hasCheckedId) && !IsPrefab()) {
                     UpdateUniqueID();
                 }
-
-                return;
             }
+        }
 #endif
-
-            CheckDynamicRegister().Forget();
-        }
-
-        public UniTask CheckDynamicRegister() {
-            if (!_needsToInitialize) return UniTask.CompletedTask;
-
-            var level = PersistedLevelRoot.Current;
-            if (level == null || !level.ObjectsLoaded) return UniTask.CompletedTask;
-
-            SceneLoadingManager.Instance.GetSceneLoadedState(gameObject.scene.name, out _, out RegionRoot region);
-            if (region is PersistedRegionRoot { ObjectsLoaded: false }) return UniTask.CompletedTask;
-
-            Initialize();
-            InitializeComponents();
-            return PostLoad();
-        }
 
         public void SetupDynamicInstance(ulong instanceID) {
             if (!_needsToInitialize) {
                 Debug.LogError("SetupDynamicInstance can only be called before a spawned object is initialized.", this);
+                return;
             }
 
             _instanceID = instanceID;
             IsDynamicInstance = true;
+
+            PersistedLevelRoot level = PersistedLevelRoot.Current;
+            if (level == null || !level.ObjectsLoaded) return;
+
+            SceneLoadingManager.Instance.GetSceneLoadedState(gameObject.scene.name, out _, out RegionRoot region);
+            if (region is PersistedRegionRoot { ObjectsLoaded: false }) return;
+
+            Initialize();
+            InitializeComponents();
+            PostLoad().Forget();
         }
 
         public void SetInstanceIDEditMode(ulong instanceID) {
