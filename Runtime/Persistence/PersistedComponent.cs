@@ -1,17 +1,17 @@
 // The MIT License (MIT)
-// 
+//
 // Copyright (c) 2026-present Val Miller
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,10 +29,11 @@ namespace Infohazard.Sequencing {
         public UniTask PostLoad();
         public void WriteState();
     }
-    
+
     public class PersistedComponent<T> : MonoBehaviour, IPersistedComponent where T : PersistedData, new() {
         protected T State { get; private set; }
         public bool Initialized => State != null;
+        public bool IsObjectFullyInitialized => Initialized && Owner.Initialized;
         protected PersistedGameObjectBase Owner { get; private set; }
 
         public void Initialize(PersistedGameObjectBase owner, PersistedData parent, string id) {
@@ -52,7 +53,7 @@ namespace Infohazard.Sequencing {
             State = new T();
             LoadDefaultState();
         }
-        
+
         public virtual void LoadState() {}
         public virtual void LoadDefaultState() {}
         public virtual UniTask PostLoad() => UniTask.CompletedTask;
