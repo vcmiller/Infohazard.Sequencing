@@ -40,6 +40,7 @@ namespace Infohazard.Sequencing {
                     IgnoreSerializableAttribute = false,
                 },
                 Converters = {
+                    new Vector2Converter(),
                     new Vector3Converter(),
                     new QuaternionConverter(),
                 },

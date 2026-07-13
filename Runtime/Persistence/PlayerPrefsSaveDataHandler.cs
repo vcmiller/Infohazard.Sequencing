@@ -1,6 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using UnityEngine;
 
 namespace Infohazard.Sequencing {
@@ -9,6 +13,21 @@ namespace Infohazard.Sequencing {
         private string _dataPrefName = "SaveData";
 
         private GlobalSaveDataPair _globalData;
+        private JsonSerializer _jsonSerializer;
+
+        private void Awake() {
+            _jsonSerializer = new JsonSerializer {
+                Formatting = Formatting.None,
+                ContractResolver = new DefaultContractResolver {
+                    IgnoreSerializableAttribute = false,
+                },
+                Converters = {
+                    new Vector2Converter(),
+                    new Vector3Converter(),
+                    new QuaternionConverter(),
+                },
+            };
+        }
 
         public override GlobalSaveData GetGlobalSaveData(Serializer serializer) {
             _globalData ??= GetGlobalDataPair();
@@ -167,13 +186,18 @@ namespace Infohazard.Sequencing {
         #region Private Methods
 
         private T CopyData<T>(T data) {
-            string json = JsonConvert.SerializeObject(data);
-            return JsonConvert.DeserializeObject<T>(json);
+            using StringWriter stringWriter = new();
+            _jsonSerializer.Serialize(stringWriter, data);
+
+            using StringReader stringReader = new(stringWriter.ToString());
+            using JsonTextReader jsonReader = new(stringReader);
+            return _jsonSerializer.Deserialize<T>(jsonReader);
         }
 
         private void Save() {
-            string json = JsonConvert.SerializeObject(_globalData);
-            PlayerPrefs.SetString(_dataPrefName, json);
+            using StringWriter stringWriter = new();
+            _jsonSerializer.Serialize(stringWriter, _globalData);
+            PlayerPrefs.SetString(_dataPrefName, stringWriter.ToString());
         }
 
         private GlobalSaveDataPair GetGlobalDataPair() {
@@ -185,7 +209,9 @@ namespace Infohazard.Sequencing {
                 };
             }
 
-            return JsonConvert.DeserializeObject<GlobalSaveDataPair>(json);
+            using StringReader stringReader = new(json);
+            using JsonTextReader jsonReader = new(stringReader);
+            return _jsonSerializer.Deserialize<GlobalSaveDataPair>(jsonReader);
         }
 
         private ProfileSaveDataPair GetProfileSaveDataPair(string profile) {
