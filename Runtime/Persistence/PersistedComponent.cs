@@ -34,6 +34,10 @@ namespace Infohazard.Sequencing {
         protected T State { get; private set; }
         public bool Initialized => State != null;
         public bool IsObjectFullyInitialized => Initialized && Owner.Initialized;
+
+        public bool IsObjectFullyInitializedWithScene =>
+            IsObjectFullyInitialized && PersistedLevelRoot.Current is { ObjectsLoaded: true };
+        
         protected PersistedGameObjectBase Owner { get; private set; }
 
         public void Initialize(PersistedGameObjectBase owner, PersistedData parent, string id) {
